@@ -1213,7 +1213,7 @@
                                             <location>${project.build.directory}/etc/promsapp.service</location>
                                         </source>
                                         <!--<source>-->
-                                        <!--<location>${project.basedir}/LICENSE.txt</location>-->
+                                            <!--<location>${project.basedir}/LICENSE.txt</location>-->
                                         <!--</source>-->
                                     </sources>
                                 </mapping>
