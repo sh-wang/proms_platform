@@ -382,6 +382,21 @@
             <artifactId>cucumber-spring</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-base</artifactId>
+            <version>3.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-dstu3</artifactId>
+            <version>3.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi.fhir</groupId>
+            <artifactId>hapi-fhir-structures-dstu3</artifactId>
+            <version>3.5.0-SNAPSHOT</version>
+        </dependency>
         <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>
 
@@ -1213,7 +1228,7 @@
                                             <location>${project.build.directory}/etc/promsapp.service</location>
                                         </source>
                                         <!--<source>-->
-                                            <!--<location>${project.basedir}/LICENSE.txt</location>-->
+                                        <!--<location>${project.basedir}/LICENSE.txt</location>-->
                                         <!--</source>-->
                                     </sources>
                                 </mapping>
