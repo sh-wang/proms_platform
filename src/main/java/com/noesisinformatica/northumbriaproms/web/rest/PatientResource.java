@@ -24,18 +24,15 @@ package com.noesisinformatica.northumbriaproms.web.rest;
  * #L%
  */
 
-import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
-import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
 import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
-import org.hl7.fhir.dstu3.model.Enumerations;
-import org.hl7.fhir.dstu3.model.ContactPoint.ContactPointSystem;
+import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -50,12 +47,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import java.util.List;
-import ca.uhn.fhir.context.FhirContext;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Patient.
@@ -143,31 +138,10 @@ public class PatientResource {
      */
     @GetMapping("/patients/{id}")
     @Timed
-    public String getPatient(@PathVariable Long id) {
+    public ResponseEntity<Patient> getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient : {}", id);
         Patient patient = patientService.findOne(id);
-        org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
-        patientFhir.addName().setFamily(patient.getFamilyName()).addGiven(patient.getGivenName());
-
-        ZoneId zoneId = ZoneId.systemDefault();
-        ZonedDateTime btd = patient.getBirthDate().atStartOfDay(zoneId);
-        patientFhir.setBirthDate(Date.from(btd.toInstant()));
-        patientFhir.addTelecom().setSystem(ContactPointSystem.EMAIL).setValue(patient.getEmail());
-        patientFhir.addIdentifier().setSystem("NHS").setValue(patient.getNhsNumber().toString());
-        if (patient.getGender().equals(GenderType.MALE)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.MALE);
-        }else if(patient.getGender().equals(GenderType.FEMALE)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.FEMALE);
-        }else if(patient.getGender().equals(GenderType.OTHER)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.OTHER);
-        }else if(patient.getGender().equals(GenderType.UNKNOWN)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
-        }
-        FhirContext ctx = FhirContext.forDstu3();
-        IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(true);
-        String encode = p.encodeResourceToString(patientFhir);
-        return encode;
+        return ResponseUtil.wrapOrNotFound(Optional.ofNullable(patient));
     }
 
     /**
