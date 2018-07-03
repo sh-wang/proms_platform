@@ -27,12 +27,16 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.google.gson.JsonArray;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
+import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
+import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
+import io.github.jhipster.config.JHipsterProperties;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.slf4j.Logger;
@@ -42,13 +46,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -56,15 +61,17 @@ import java.util.List;
  * REST controller for managing Patient.
  */
 @RestController
-@RequestMapping("/fhirapi")
+@RequestMapping("/api/fhir")
 public class PatientFhirResource {
     private final Logger log = LoggerFactory.getLogger(PatientFhirResource.class);
 
     private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
+    private final PatientQueryService patientQueryService;
 
-    public PatientFhirResource(PatientService patientService) {
+    public PatientFhirResource(PatientService patientService, PatientQueryService patientQueryService) {
+        this.patientQueryService = patientQueryService;
         this.patientService = patientService;
     }
 
@@ -110,5 +117,31 @@ public class PatientFhirResource {
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
     }
+
+
+
+
+
+    @GetMapping("/patients")
+    @Timed
+    public String getAllPatient(PatientCriteria criteria, Pageable pageable){
+        log.debug("REST request to get Patients by criteria: {}", criteria);
+        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/patients");
+        ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+
+        String patients = "[";
+        int i;
+        for(i=0; i<responseEntity.getBody().size()-1; i++){
+            patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
+        }
+
+        patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
+        return patients;
+
+
+    }
+
+
 
 }
