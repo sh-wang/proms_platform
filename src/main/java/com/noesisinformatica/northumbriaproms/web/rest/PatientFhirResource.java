@@ -27,7 +27,6 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
-import com.google.gson.JsonArray;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
@@ -53,7 +52,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -77,15 +75,15 @@ public class PatientFhirResource {
 
 
     /**
-     * GET  /patients/:id : get the "id" patient.
+     * GET  /patients/:id : get the "id" patient in FHIR format.
      *
      * @param id the id of the patient to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the patient, or with status 404 (Not Found)
+     * @return a string of the patient information in FHIR format
      */
     @GetMapping("/patients/{id}")
     @Timed
     public String getPatient(@PathVariable Long id) {
-        log.debug("REST request to get Patient for fhir conversion : {}", id);
+        log.debug("REST request to get Patient in FHIR format: {}", id);
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
         patientFhir.addName().setFamily(patient.getFamilyName()).addGiven(patient.getGivenName());
@@ -95,6 +93,7 @@ public class PatientFhirResource {
         patientFhir.setBirthDate(Date.from(btd.toInstant()));
 
         patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
+        patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
 
         if (patient.getNhsNumber() == null){
             patientFhir.addIdentifier().setSystem("nhsNumber").setValue("0000000000");
@@ -113,35 +112,65 @@ public class PatientFhirResource {
         }
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
+        ctx.newJsonParser();
         p.setPrettyPrint(true);
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
     }
 
 
-
-
-
+    /**
+     * GET  /patients : get all the patients in FHIR format.
+     *
+     * @param pageable the pagination information
+     * @param criteria the criterias which the requested entities should match
+     * @return a string with all patients information in FHIR format
+     */
     @GetMapping("/patients")
     @Timed
-    public String getAllPatient(PatientCriteria criteria, Pageable pageable){
-        log.debug("REST request to get Patients by criteria: {}", criteria);
+    public String getAllPatient(PatientCriteria criteria, Pageable pageable) {
+        log.debug("REST request to get Patients in FHIR format by criteria: {}", criteria);
         Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/patients");
         ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
 
         String patients = "[";
         int i;
-        for(i=0; i<responseEntity.getBody().size()-1; i++){
+        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
             patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
         }
 
         patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
         return patients;
-
-
     }
 
 
+    /**
+     * SEARCH  /_search/patients?query=:query : search for the patient corresponding
+     * to the query.
+     *
+     * @param query the query of the patient search
+     * @param pageable the pagination information
+     * @return the result of the search in FHIR
+     */
+    @GetMapping("/_search/patients")
+    @Timed
+    public String searchPatients(@RequestParam String query, Pageable pageable) {
+        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
+        Page<Patient> page = patientService.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
+            (query, page, "/api/fhir/_search/patients");
+        ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>
+            (page.getContent(), headers, HttpStatus.OK);
 
+        String patients = "[";
+        int i;
+        if(responseEntity.getBody().size() == 0){ return "[]"; }
+        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
+            patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
+        }
+        patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
+
+        return patients;
+    }
 }
