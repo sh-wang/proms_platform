@@ -57,10 +57,12 @@ public class QuestionnaireResponseFhirResource {
 
     private final FollowupActionQueryService followupActionQueryService;
     private final FollowupActionService followupActionService;
+    private final PatientFhirResource patientFhirResource;
 
-    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService){
+    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource){
         this.followupActionService = followupActionService;
         this.followupActionQueryService = followupActionQueryService;
+        this.patientFhirResource = patientFhirResource;
     }
 
 
@@ -79,7 +81,9 @@ public class QuestionnaireResponseFhirResource {
         questionnaireResponse.setId("2");
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         Patient patient = followupAction.getPatient();
-        r.setReference(String.valueOf(patient));
+//        r.setReference(String.valueOf(patient));
+        String patientInfo = patientFhirResource.getPatient(patient.getId());
+        r.setReference(patientInfo);
         questionnaireResponse.setSource(r);
 
         FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
