@@ -74,16 +74,16 @@ public class QuestionnaireResponseFhirResource {
      */
     @GetMapping("/fhir/followup-action/{id}")
     @Timed
-    public String getByPatientId(@PathVariable Long id){
+    public String getByFollowupActionId(@PathVariable Long id){
         FollowupAction followupAction = followupActionService.findOne(id);
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse= new org.hl7.fhir.dstu3.model.QuestionnaireResponse();
         org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference();
-        questionnaireResponse.setId("2");
+        questionnaireResponse.setId(id.toString());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         Patient patient = followupAction.getPatient();
-//        r.setReference(String.valueOf(patient));
-        String patientInfo = patientFhirResource.getPatient(patient.getId());
-        r.setReference(patientInfo);
+        r.setReference(String.valueOf(patient));
+//        String patientInfo = patientFhirResource.getPatient(patient.getId());
+//        r.setReference(patientInfo);
         questionnaireResponse.setSource(r);
 
         FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
@@ -104,11 +104,8 @@ public class QuestionnaireResponseFhirResource {
                 ResponseItem responseItem = (ResponseItem) it1.next();
                 org.hl7.fhir.dstu3.model.IntegerType i = new org.hl7.fhir.dstu3.model.IntegerType();
                 i.setValue(responseItem.getValue());
-
                 questionnaireResponse.addItem().setLinkId(responseItem.getId().toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i);
-
             }
-
         }
 
         FhirContext ctx = FhirContext.forDstu3();
