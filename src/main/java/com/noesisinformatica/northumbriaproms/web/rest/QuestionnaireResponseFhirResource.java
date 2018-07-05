@@ -81,19 +81,19 @@ public class QuestionnaireResponseFhirResource {
         questionnaireResponse.setId(id.toString());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         Patient patient = followupAction.getPatient();
-        r.setReference(String.valueOf(patient));
+//        r.setReference(String.valueOf(patient));
 //        String patientInfo = patientFhirResource.getPatient(patient.getId());
-//        r.setReference(patientInfo);
+        r.setReference("localhost:8080/api/fhir/patients/"+patient.getId());
         questionnaireResponse.setSource(r);
 
         FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
         org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
-        r2.setReference(String.valueOf(followupPlan));
+        r2.setReference("localhost:8080/api/fhir/followupPlan/"+followupPlan.getId());
         questionnaireResponse.setBasedOn(Collections.singletonList(r2));
 
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
-        r3.setReference(String.valueOf(questionnaire));
+        r3.setReference("localhost:8080/api/fhir/questionnaire/"+questionnaire.getId());
         questionnaireResponse.setQuestionnaire(r3);
 
         if(!followupAction.getResponseItems().isEmpty()){
