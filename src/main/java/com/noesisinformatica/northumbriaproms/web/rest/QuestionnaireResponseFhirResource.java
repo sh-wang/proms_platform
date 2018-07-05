@@ -94,7 +94,8 @@ public class QuestionnaireResponseFhirResource {
 
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
         org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
-        r4.setReference("localhost:8080/api/fhir/followupPlan/"+procedureBooking.getId());
+        r4.setReference("localhost:8080/api/fhir/procedures/"+procedureBooking.getId());
+        questionnaireResponse.addParent(r4);
 
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
