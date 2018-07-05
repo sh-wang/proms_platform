@@ -87,10 +87,10 @@ public class QuestionnaireResponseFhirResource {
         r.setReference("localhost:8080/api/fhir/patients/"+patient.getId());
         questionnaireResponse.setSource(r);
 
-        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
-        org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
-        r2.setReference("localhost:8080/api/fhir/followupPlan/"+followupPlan.getId());
-        questionnaireResponse.setBasedOn(Collections.singletonList(r2));
+//        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
+//        org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
+//        r2.setReference("localhost:8080/api/fhir/followupPlan/"+followupPlan.getId());
+//        questionnaireResponse.setBasedOn(Collections.singletonList(r2));
 
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
         org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
