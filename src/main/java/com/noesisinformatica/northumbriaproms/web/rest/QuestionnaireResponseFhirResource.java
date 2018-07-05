@@ -51,7 +51,7 @@ import java.util.Set;
  * REST controller for Resource QuestionnaireResponse.
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/fhir")
 public class QuestionnaireResponseFhirResource {
     private final Logger log = LoggerFactory.getLogger(QuestionnaireResponseFhirResource.class);
 
@@ -72,7 +72,7 @@ public class QuestionnaireResponseFhirResource {
      * @param id the id of the followup-action
      * @return the ResponseEntity with status 200 (OK) and with body the QuestionnaireResponse, or with status 404 (Not Found)
      */
-    @GetMapping("/fhir/followup-action/{id}")
+    @GetMapping("/questionnaire-response/{id}")
     @Timed
     public String getByFollowupActionId(@PathVariable Long id){
         FollowupAction followupAction = followupActionService.findOne(id);
