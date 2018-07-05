@@ -116,7 +116,7 @@ public class PatientFhirResource {
             patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         }
 
-        
+
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
