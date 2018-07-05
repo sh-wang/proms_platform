@@ -29,6 +29,7 @@ import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.*;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
+import com.noesisinformatica.northumbriaproms.domain.Procedure;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
@@ -91,9 +92,13 @@ public class QuestionnaireResponseFhirResource {
         r2.setReference("localhost:8080/api/fhir/followupPlan/"+followupPlan.getId());
         questionnaireResponse.setBasedOn(Collections.singletonList(r2));
 
+        ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
+        org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
+        r4.setReference("localhost:8080/api/fhir/followupPlan/"+procedureBooking.getId());
+
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
-        r3.setReference("localhost:8080/api/fhir/questionnaire/"+questionnaire.getId());
+        r3.setReference("localhost:8080/api/fhir/questionnaires/"+questionnaire.getId());
         questionnaireResponse.setQuestionnaire(r3);
 
         if(!followupAction.getResponseItems().isEmpty()){
