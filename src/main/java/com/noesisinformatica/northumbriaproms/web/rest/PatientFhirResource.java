@@ -27,6 +27,7 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.noesisinformatica.northumbriaproms.domain.Address;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
@@ -54,6 +55,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST controller for managing Patient.
@@ -86,15 +88,18 @@ public class PatientFhirResource {
         log.debug("REST request to get Patient in FHIR format: {}", id);
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
+        // add name
         patientFhir.addName().setFamily(patient.getFamilyName()).addGiven(patient.getGivenName());
-
+        // add dob
         ZoneId zoneId = ZoneId.systemDefault();
         ZonedDateTime btd = patient.getBirthDate().atStartOfDay(zoneId);
         patientFhir.setBirthDate(Date.from(btd.toInstant()));
-
+        // add Email
         patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
         patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
 
+
+        // add gender
         if (patient.getNhsNumber() == null){
             patientFhir.addIdentifier().setSystem("nhsNumber").setValue("0000000000");
         }else{
@@ -110,6 +115,8 @@ public class PatientFhirResource {
         }else if(patient.getGender().equals(GenderType.UNKNOWN)){
             patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         }
+
+
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
