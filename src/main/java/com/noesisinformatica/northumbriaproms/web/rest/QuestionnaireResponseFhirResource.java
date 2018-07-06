@@ -34,19 +34,20 @@ import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.service.dto.FollowupActionCriteria;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
 import io.github.jhipster.service.filter.LongFilter;
 import org.hl7.fhir.dstu3.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.FacetedPage;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * REST controller for Resource QuestionnaireResponse.
@@ -126,5 +127,23 @@ public class QuestionnaireResponseFhirResource {
         String encode = p.encodeResourceToString(questionnaireResponse);
         return encode;
 
+    }
+
+    /**
+     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
+     * to the query.
+     *
+     * @param query the query of the followupAction search
+     * @param pageable the pagination information
+     * @return the result of the search
+     */
+    @GetMapping("/_search/followup-actions")
+    @Timed
+    public ResponseEntity<Map<String, Object>> searchQuestionnaireResponses(@RequestBody QueryModel query, Pageable pageable) {
+        log.debug("REST request to search for a page of FollowupActions for query {}", query);
+        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/_search/followup-actions");
+        // wrap results page in a response entity with faceted results turned into a map
+        return new ResponseEntity<>(getResultMapMapForResults(page), headers, HttpStatus.OK);
     }
 }
