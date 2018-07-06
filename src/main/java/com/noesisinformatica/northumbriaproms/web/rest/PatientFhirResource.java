@@ -143,6 +143,7 @@ public class PatientFhirResource {
 
         String patients = "[";
         int i;
+        if(responseEntity.getBody().size() == 0){ return "[]"; }
         for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
             patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
         }

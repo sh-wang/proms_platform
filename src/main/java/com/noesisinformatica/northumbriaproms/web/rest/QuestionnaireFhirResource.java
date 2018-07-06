@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 
+
 /**
  * REST controller for Resource QuestionnaireResponse.
  */
@@ -32,7 +33,7 @@ public class QuestionnaireFhirResource {
      * GET  /questionnaires/:id : get the "id" questionnaire.
      *
      * @param id the id of the questionnaire to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the questionnaire, or with status 404 (Not Found)
+     * @return corresponding questionnaire in FHIR
      */
     @GetMapping("/questionnaires/{id}")
     @Timed
@@ -40,7 +41,8 @@ public class QuestionnaireFhirResource {
         log.debug("REST request to get Questionnaire : {}", id);
         Questionnaire questionnaire = questionnaireService.findOne(id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
-        questionnaireFhir.setUrl("localhost:8080/api/fhir/questionnaire/"+id);
+
+        questionnaireFhir.setUrl("localhost:8080/api/fhir/questionnaires/"+id);
         questionnaireFhir.setId(id.toString());
         questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
         questionnaireFhir.setName(questionnaire.getName());
