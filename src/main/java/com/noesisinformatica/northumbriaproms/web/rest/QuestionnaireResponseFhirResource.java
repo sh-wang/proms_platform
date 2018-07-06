@@ -42,6 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.FacetedPage;
+import org.springframework.data.elasticsearch.core.facet.result.Term;
+import org.springframework.data.elasticsearch.core.facet.result.TermResult;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,12 +62,22 @@ public class QuestionnaireResponseFhirResource {
     private final FollowupActionQueryService followupActionQueryService;
     private final FollowupActionService followupActionService;
     private final PatientFhirResource patientFhirResource;
+    private final FollowupActionResource followupActionResource;
 
-    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource){
+    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource){
         this.followupActionService = followupActionService;
         this.followupActionQueryService = followupActionQueryService;
         this.patientFhirResource = patientFhirResource;
+        this.followupActionResource = followupActionResource;
     }
+
+
+    /**
+     * Utility private method for transforming a {@link FacetedPage} into a {@link Map} object with results
+     * and categories.
+     * @param page the page of results
+     * @return results as a Map
+     */
 
 
     /**
@@ -137,13 +149,29 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-    @GetMapping("/_search/followup-actions")
+    @GetMapping("/_search/questionnaire-response")
     @Timed
-    public ResponseEntity<Map<String, Object>> searchQuestionnaireResponses(@RequestBody QueryModel query, Pageable pageable) {
+    public String searchQuestionnaireResponse(@RequestBody QueryModel query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions for query {}", query);
         FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/_search/followup-actions");
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/fhir/_search/questionnaire-response");
         // wrap results page in a response entity with faceted results turned into a map
-        return new ResponseEntity<>(getResultMapMapForResults(page), headers, HttpStatus.OK);
+//        return new ResponseEntity<>(followupActionResource.getMapResults(page), headers, HttpStatus.OK);
+
+        ResponseEntity<Map<String, Object>> responseEntity = new ResponseEntity<>(followupActionResource.getMapResults(page), headers, HttpStatus.OK);
+
+        String questionnaireResponse="[";
+        int i=0;
+        for(i=0; i<responseEntity.getBody().size()-1; i++){
+            Object o = responseEntity.getBody().get(i);
+            Long id = Long.parseLong(o.toString());
+            questionnaireResponse = questionnaireResponse + getByFollowupActionId(id) + ",";
+
+        }
+        Object o1 = responseEntity.getBody().get(i);
+        Long id1 = Long.parseLong(o1.toString());
+        questionnaireResponse = questionnaireResponse + getByFollowupActionId(id1) + "]";
+
+        return questionnaireResponse;
     }
 }
