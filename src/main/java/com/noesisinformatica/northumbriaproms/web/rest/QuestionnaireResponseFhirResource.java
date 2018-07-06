@@ -109,11 +109,15 @@ public class QuestionnaireResponseFhirResource {
             while(it1.hasNext()){
                 ResponseItem responseItem = (ResponseItem) it1.next();
                 org.hl7.fhir.dstu3.model.IntegerType i = new org.hl7.fhir.dstu3.model.IntegerType();
-                org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
-                s.setValue(followupAction.getOutcomeComment());
+//                org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
+//                s.setValue(followupAction.getOutcomeComment());
                 i.setValue(responseItem.getValue());
-                questionnaireResponse.addItem().setLinkId(responseItem.getId().toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i).addItem().addAnswer().setValue(s);
+                questionnaireResponse.addItem().setLinkId(responseItem.getId().toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i);
             }
+            org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
+            s.setValue(followupAction.getOutcomeComment());
+            questionnaireResponse.addItem().addAnswer().setValue(s);
+
         }
 
         FhirContext ctx = FhirContext.forDstu3();
