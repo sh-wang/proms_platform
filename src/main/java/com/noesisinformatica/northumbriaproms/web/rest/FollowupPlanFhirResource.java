@@ -35,6 +35,12 @@ public class FollowupPlanFhirResource {
     }
 
 
+
+    // THIS CLASS IS CURRENTLY OUT OF SERVICE.
+    // we try to use followupPlan to add "baseon" for questionnaire-response resource, but it doesn't mapped well
+
+
+
     /**
      * GET  /procedure-bookings/:id/followup-plan : get the followupPlan for "id" procedure booking
      *

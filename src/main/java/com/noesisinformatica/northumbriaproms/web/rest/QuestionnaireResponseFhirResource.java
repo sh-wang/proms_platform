@@ -100,27 +100,32 @@ public class QuestionnaireResponseFhirResource {
 
         questionnaireResponse.setId(id.toString());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        // add patient as resource url, in the format of fhir standard, json format
         Patient patient = followupAction.getPatient();
 //        r.setReference(String.valueOf(patient));
 //        String patientInfo = patientFhirResource.getPatient(patient.getId());
         r.setReference(defaultPath + "patients/"+patient.getId());
         questionnaireResponse.setSource(r);
 
+
 //        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
 //        org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
 //        r2.setReference("localhost:8080/api/fhir/followupPlan/"+followupPlan.getId());
 //        questionnaireResponse.setBasedOn(Collections.singletonList(r2));
 
+        // add patient's procedureBooking as resource url, in the format of fhir standard, json format.
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
         org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
         r4.setReference(defaultPath + "procedures/"+procedureBooking.getId());
         questionnaireResponse.addParent(r4);
 
+        // add questionnaire patient's need to accomplish, in the format of fhir standard, json format.
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
         r3.setReference(defaultPath + "questionnaires/"+questionnaire.getId());
         questionnaireResponse.setQuestionnaire(r3);
 
+        // display each question and its corresponding answer for the questionnaire.
         if(!followupAction.getResponseItems().isEmpty()){
             Set<ResponseItem> responseItems = followupAction.getResponseItems();
 
@@ -133,6 +138,7 @@ public class QuestionnaireResponseFhirResource {
                 i.setValue(responseItem.getValue());
                 questionnaireResponse.addItem().setLinkId(responseItem.getId().toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i);
             }
+            // outcome comment
             org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
             s.setValue(followupAction.getOutcomeComment());
             questionnaireResponse.addItem().addAnswer().setValue(s);

@@ -136,6 +136,7 @@ public class PatientFhirResource {
         log.debug("REST request to get Patients in FHIR format by criteria: {}");
         Page<Patient> page = patientService.findAll(pageable);
 
+        // here we create a long String containing all patients' info in fhir standard, json format
         String patients = "[";
         int i, patientCount;
         patientCount = page.getContent().size();
@@ -167,6 +168,7 @@ public class PatientFhirResource {
         ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>
             (page.getContent(), headers, HttpStatus.OK);
 
+        // identical to method above, but query only supports NHS number and patient's name
         String patients = "[";
         int i, patientCount;
         patientCount = responseEntity.getBody().size();
