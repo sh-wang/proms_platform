@@ -27,7 +27,6 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
-import com.noesisinformatica.northumbriaproms.domain.Address;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
@@ -36,7 +35,6 @@ import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
 import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
-import io.github.jhipster.config.JHipsterProperties;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.slf4j.Logger;
@@ -50,7 +48,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -99,13 +96,14 @@ public class PatientFhirResource {
         patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
 
 
-        // add gender
+        // add NHS number
         if (patient.getNhsNumber() == null){
             patientFhir.addIdentifier().setSystem("nhsNumber").setValue("0000000000");
         }else{
             patientFhir.addIdentifier().setSystem("nhsNumber").setValue(patient.getNhsNumber().toString());
         }
 
+        //add gender
         if (patient.getGender().equals(GenderType.MALE)){
             patientFhir.setGender(Enumerations.AdministrativeGender.MALE);
         }else if(patient.getGender().equals(GenderType.FEMALE)){
@@ -130,25 +128,23 @@ public class PatientFhirResource {
      * GET  /patients : get all the patients in FHIR format.
      *
      * @param pageable the pagination information
-     * @param criteria the criterias which the requested entities should match
      * @return a string with all patients information in FHIR format
      */
     @GetMapping("/patients")
     @Timed
-    public String getAllPatient(PatientCriteria criteria, Pageable pageable) {
-        log.debug("REST request to get Patients in FHIR format by criteria: {}", criteria);
-        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/patients");
-        ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    public String getAllPatient(Pageable pageable) {
+        log.debug("REST request to get Patients in FHIR format by criteria: {}");
+        Page<Patient> page = patientService.findAll(pageable);
 
         String patients = "[";
-        int i;
-        if(responseEntity.getBody().size() == 0){ return "[]"; }
-        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
-            patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
+        int i, patientCount;
+        patientCount = page.getContent().size();
+        if(patientCount == 0){ return "[]"; }
+        for (i = 0; i < patientCount - 1; i++) {
+            patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
         }
 
-        patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
+        patients = patients + getPatient(page.getContent().get(i).getId()) + "]";
         return patients;
     }
 
@@ -172,9 +168,10 @@ public class PatientFhirResource {
             (page.getContent(), headers, HttpStatus.OK);
 
         String patients = "[";
-        int i;
-        if(responseEntity.getBody().size() == 0){ return "[]"; }
-        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
+        int i, patientCount;
+        patientCount = responseEntity.getBody().size();
+        if(patientCount == 0){ return "[]"; }
+        for (i = 0; i < patientCount - 1; i++) {
             patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
         }
         patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
