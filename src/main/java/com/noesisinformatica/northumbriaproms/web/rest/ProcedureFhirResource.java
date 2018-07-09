@@ -30,6 +30,7 @@ public class ProcedureFhirResource {
         this.procedureService = procedureService;
     }
 
+
     /**
      * GET  /procedures/:id : get the "id" procedure.
      *
@@ -39,8 +40,8 @@ public class ProcedureFhirResource {
     @GetMapping("/Procedure/{id}")
     @Timed
     public String getProcedure(@PathVariable Long id) {
+        log.debug("REST request to get Procedure in FHIR : {}", id);
         org.hl7.fhir.dstu3.model.Procedure procedureFhir = getProcedureResource(id);
-
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
@@ -49,11 +50,17 @@ public class ProcedureFhirResource {
         return encode;
     }
 
-    public org.hl7.fhir.dstu3.model.Procedure getProcedureResource(@PathVariable Long id){
-        log.debug("REST request to get Procedure in FHIR : {}", id);
-        Procedure procedure = procedureService.findOne(id);
 
+    /**
+     * get the FHIR dstu3 procedure with ID id
+     *
+     * @param id the id of the procedure to retrieve
+     * @return corresponding FHIR dstu3 procedure
+     */
+    public org.hl7.fhir.dstu3.model.Procedure getProcedureResource(@PathVariable Long id){
+        Procedure procedure = procedureService.findOne(id);
         org.hl7.fhir.dstu3.model.Procedure procedureFhir = new org.hl7.fhir.dstu3.model.Procedure();
+
         procedureFhir.setId(id.toString());
         //currently no status data
         procedureFhir.setStatus(org.hl7.fhir.dstu3.model.Procedure.ProcedureStatus.UNKNOWN);
@@ -65,6 +72,7 @@ public class ProcedureFhirResource {
 
         return procedureFhir;
     }
+
 
     /**
      * GET  /procedures : get all the procedures.

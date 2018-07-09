@@ -43,7 +43,7 @@ public class QuestionnaireFhirResource {
     @GetMapping("/Questionnaire/{id}")
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
-
+        log.debug("REST request to get Questionnaire in FHIR : {}", id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = getQuestionnaireResource(id);
 
         FhirContext ctx = FhirContext.forDstu3();
@@ -53,8 +53,14 @@ public class QuestionnaireFhirResource {
         return encode;
     }
 
+
+    /**
+     * get the FHIR dstu3 questionnaire with ID id
+     *
+     * @param id the id of the questionnaire to retrieve
+     * @return corresponding FHIR dstu3 questionnaire
+     */
     public org.hl7.fhir.dstu3.model.Questionnaire getQuestionnaireResource(@PathVariable Long id){
-        log.debug("REST request to get Questionnaire in FHIR : {}", id);
         Questionnaire questionnaire = questionnaireService.findOne(id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
 

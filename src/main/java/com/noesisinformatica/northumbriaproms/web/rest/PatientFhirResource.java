@@ -150,6 +150,12 @@ public class PatientFhirResource {
     }
 
 
+    /**
+     * Get the FHIR dust3 patient with ID id
+     *
+     * @param id the id of the patient to retrieve
+     * @return the patient
+     */
     public org.hl7.fhir.dstu3.model.Patient getPatientResource(Long id) {
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
@@ -163,7 +169,6 @@ public class PatientFhirResource {
         // add Email
         patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
         patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
-
 
         // add NHS number
         if (patient.getNhsNumber() == null){
