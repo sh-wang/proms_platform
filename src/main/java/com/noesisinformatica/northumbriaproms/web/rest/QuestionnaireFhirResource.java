@@ -45,7 +45,7 @@ public class QuestionnaireFhirResource {
     @GetMapping("/Questionnaire/{id}")
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
-        log.debug("REST request to get Questionnaire : {}", id);
+        log.debug("REST request to get Questionnaire in FHIR : {}", id);
         Questionnaire questionnaire = questionnaireService.findOne(id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
 

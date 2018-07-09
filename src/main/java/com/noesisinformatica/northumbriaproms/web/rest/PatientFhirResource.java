@@ -151,8 +151,11 @@ public class PatientFhirResource {
 
 
     /**
-     * SEARCH  /_search/patients?query=:query : search for the patient corresponding
+     * SEARCH  /Patient?query=:query : search for the patient corresponding
      * to the query.
+     * example: /Patient?query=1000000000 : search for patient with nhs number
+     * 1000000000
+     * query can be name or nhsNumber
      *
      * @param query the query of the patient search
      * @param pageable the pagination information

@@ -74,13 +74,6 @@ public class QuestionnaireResponseFhirResource {
 
     private final String defaultPath = "localhost:8080/api/fhir/";
 
-    /**
-     * Utility private method for transforming a {@link FacetedPage} into a {@link Map} object with results
-     * and categories.
-     * @param page the page of results
-     * @return results as a Map
-     */
-
 
     /**
      * GET  /followup-action/{id}.
@@ -162,7 +155,7 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-    @GetMapping("/_search/questionnaire-response")
+    @GetMapping("/Qquestionnaire-response")
     @Timed
     public String searchQuestionnaireResponse(@RequestBody QueryModel query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions for query {} in FHIR", query);
@@ -190,7 +183,7 @@ public class QuestionnaireResponseFhirResource {
 
 
     // currently not work
-    @GetMapping("/questionnaire-responses")
+    @GetMapping("/Questionnaire-response/all")
     @Timed
     public String getAllQusetionnaireResponse(Pageable pageable){
         log.debug("REST request to get all questionnaire response in FHIR");
