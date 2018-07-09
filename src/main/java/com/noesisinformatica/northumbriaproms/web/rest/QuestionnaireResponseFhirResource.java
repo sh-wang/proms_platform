@@ -60,14 +60,10 @@ public class QuestionnaireResponseFhirResource {
     private final FollowupActionService followupActionService;
     private final PatientFhirResource patientFhirResource;
     private final FollowupActionResource followupActionResource;
-<<<<<<< HEAD
-
-    public QuestionnaireResponseFhirResource( FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource){
-=======
     private final ProcedureFhirResource procedureFhirResource;
     private final QuestionnaireFhirResource questionnaireFhirResource;
     public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource, ProcedureFhirResource procedureFhirResource,QuestionnaireFhirResource questionnaireFhirResource){
->>>>>>> d2fb4d8bb1175bf9c231c49b0f45ea6595c1bfc5
+
         this.followupActionService = followupActionService;
         this.followupActionQueryService = followupActionQueryService;
         this.patientFhirResource = patientFhirResource;
@@ -165,11 +161,8 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-<<<<<<< HEAD
-    @GetMapping("/_search/followup-actions")
-=======
+
     @GetMapping("/Qquestionnaire-response")
->>>>>>> d2fb4d8bb1175bf9c231c49b0f45ea6595c1bfc5
     @Timed
     public String searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
