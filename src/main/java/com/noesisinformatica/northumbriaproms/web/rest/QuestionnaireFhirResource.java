@@ -5,15 +5,20 @@ import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.QuestionnaireService;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Optional;
+
 
 /**
  * REST controller for Resource QuestionnaireResponse.
@@ -28,11 +33,14 @@ public class QuestionnaireFhirResource {
         this.questionnaireService = questionnaireService;
     }
 
+    private final String defaultPath = "localhost:8080/api/fhir/";
+
+
     /**
      * GET  /questionnaires/:id : get the "id" questionnaire.
      *
      * @param id the id of the questionnaire to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the questionnaire, or with status 404 (Not Found)
+     * @return corresponding questionnaire in FHIR
      */
     @GetMapping("/Questionnaire/{id}")
     @Timed
@@ -40,7 +48,8 @@ public class QuestionnaireFhirResource {
         log.debug("REST request to get Questionnaire : {}", id);
         Questionnaire questionnaire = questionnaireService.findOne(id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
-        questionnaireFhir.setUrl("localhost:8080/api/fhir/questionnaire/"+id);
+
+        questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);
         questionnaireFhir.setId(id.toString());
         questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
         questionnaireFhir.setName(questionnaire.getName());
@@ -53,4 +62,28 @@ public class QuestionnaireFhirResource {
         return encode;
     }
 
+
+    /**
+     * GET  /questionnaires : get all the questionnaires.
+     *
+     * @param pageable the pagination information
+     * @return all questionnaires in FHIR
+     */
+    @GetMapping("/questionnaires")
+    @Timed
+    public String getAllQuestionnaires(Pageable pageable) {
+        log.debug("REST request to get a page of Questionnaires in FHIR");
+        Page<Questionnaire> page = questionnaireService.findAll(pageable);
+
+        String questionnaires = "[";
+        int i, questionCount;
+        questionCount = page.getContent().size();
+        if (questionCount == 0){ return "[]";}
+        for (i = 0; i < questionCount - 1; i++){
+            questionnaires = questionnaires + getQuestionnaire(page.getContent().get(i).getId()) + ",";
+        }
+
+        questionnaires = questionnaires + getQuestionnaire(page.getContent().get(i).getId()) + "]";
+        return questionnaires;
+    }
 }
