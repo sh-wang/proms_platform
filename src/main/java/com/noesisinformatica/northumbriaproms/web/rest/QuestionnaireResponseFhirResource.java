@@ -32,19 +32,13 @@ import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
-import com.noesisinformatica.northumbriaproms.service.dto.FollowupActionCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
-import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
-import io.github.jhipster.service.filter.LongFilter;
 import org.hl7.fhir.dstu3.model.*;
-import org.mapstruct.Mapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.FacetedPage;
-import org.springframework.data.elasticsearch.core.facet.result.Term;
-import org.springframework.data.elasticsearch.core.facet.result.TermResult;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +59,7 @@ public class QuestionnaireResponseFhirResource {
     private final PatientFhirResource patientFhirResource;
     private final FollowupActionResource followupActionResource;
 
-    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource){
+    public QuestionnaireResponseFhirResource( FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource){
         this.followupActionService = followupActionService;
         this.followupActionQueryService = followupActionQueryService;
         this.patientFhirResource = patientFhirResource;
@@ -162,30 +156,32 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-    @GetMapping("/_search/questionnaire-response")
+    @GetMapping("/_search/followup-actions")
     @Timed
-    public String searchQuestionnaireResponse(@RequestBody QueryModel query, Pageable pageable) {
-        log.debug("REST request to search for a page of FollowupActions for query {} in FHIR", query);
-        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/fhir/_search/questionnaire-response");
-        // wrap results page in a response entity with faceted results turned into a map
-//        return new ResponseEntity<>(followupActionResource.getMapResults(page), headers, HttpStatus.OK);
+    public String searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
+        log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
+        Page<FollowupAction> page = followupActionService.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/fhir/_search/followup-actions");
 
-        ResponseEntity<Map<String, Object>> responseEntity = new ResponseEntity<>(followupActionResource.getMapResults(page), headers, HttpStatus.OK);
 
-        String questionnaireResponse="[";
-        int i=0;
-        for(i=0; i<responseEntity.getBody().size()-1; i++){
+        ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+
+
+        // identical to method above, but query only supports NHS number and patient's name
+        String questionnaireResponses = "[";
+        int i;
+        if(responseEntity.getBody().size() == 0){ return "[]"; }
+        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
             Object o = responseEntity.getBody().get(i);
-            Long id = Long.parseLong(o.toString());
-            questionnaireResponse = questionnaireResponse + getByFollowupActionId(id) + ",";
-
+            Long id = ((FollowupAction) o).getId();
+            questionnaireResponses += getByFollowupActionId(id) + ",";
         }
-        Object o1 = responseEntity.getBody().get(i);
-        Long id1 = Long.parseLong(o1.toString());
-        questionnaireResponse = questionnaireResponse + getByFollowupActionId(id1) + "]";
 
-        return questionnaireResponse;
+        Object o1 = responseEntity.getBody().get(i);
+        Long id1 =((FollowupAction) o1).getId();
+        questionnaireResponses += getByFollowupActionId(id1) ;
+
+        return questionnaireResponses;
     }
 
 
