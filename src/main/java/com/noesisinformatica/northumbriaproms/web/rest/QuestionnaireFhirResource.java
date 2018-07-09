@@ -34,7 +34,7 @@ public class QuestionnaireFhirResource {
      * @param id the id of the questionnaire to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the questionnaire, or with status 404 (Not Found)
      */
-    @GetMapping("/questionnaires/{id}")
+    @GetMapping("/Questionnaire/{id}")
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
         log.debug("REST request to get Questionnaire : {}", id);

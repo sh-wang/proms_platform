@@ -82,7 +82,7 @@ public class PatientFhirResource {
      * @param id the id of the patient to retrieve
      * @return a string of the patient information in FHIR format
      */
-    @GetMapping("/patients/{id}")
+    @GetMapping("/Patient/{id}")
     @Timed
     public String getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient in FHIR format: {}", id);
@@ -133,7 +133,7 @@ public class PatientFhirResource {
      * @param criteria the criterias which the requested entities should match
      * @return a string with all patients information in FHIR format
      */
-    @GetMapping("/patients")
+    @GetMapping("/Patient")
     @Timed
     public String getAllPatient(PatientCriteria criteria, Pageable pageable) {
         log.debug("REST request to get Patients in FHIR format by criteria: {}", criteria);

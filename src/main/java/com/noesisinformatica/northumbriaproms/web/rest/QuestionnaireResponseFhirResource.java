@@ -85,7 +85,7 @@ public class QuestionnaireResponseFhirResource {
         Patient patient = followupAction.getPatient();
 //        r.setReference(String.valueOf(patient));
 //        String patientInfo = patientFhirResource.getPatient(patient.getId());
-        r.setReference("localhost:8080/api/fhir/patients/"+patient.getId());
+        r.setReference("localhost:8080/api/fhir/Patient/"+patient.getId());
         questionnaireResponse.setSource(r);
 
 //        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
@@ -95,12 +95,12 @@ public class QuestionnaireResponseFhirResource {
 
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
         org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
-        r4.setReference("localhost:8080/api/fhir/procedures/"+procedureBooking.getId());
+        r4.setReference("localhost:8080/api/fhir/Procedure/"+procedureBooking.getId());
         questionnaireResponse.addParent(r4);
 
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
-        r3.setReference("localhost:8080/api/fhir/questionnaires/"+questionnaire.getId());
+        r3.setReference("localhost:8080/api/fhir/Questionnaire/"+questionnaire.getId());
         questionnaireResponse.setQuestionnaire(r3);
 
         if(!followupAction.getResponseItems().isEmpty()){
@@ -129,21 +129,5 @@ public class QuestionnaireResponseFhirResource {
 
     }
 
-    /**
-     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
-     * to the query.
-     *
-     * @param query the query of the followupAction search
-     * @param pageable the pagination information
-     * @return the result of the search
-     */
-    @GetMapping("/_search/followup-actions")
-    @Timed
-    public ResponseEntity<Map<String, Object>> searchQuestionnaireResponses(@RequestBody QueryModel query, Pageable pageable) {
-        log.debug("REST request to search for a page of FollowupActions for query {}", query);
-        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/_search/followup-actions");
-        // wrap results page in a response entity with faceted results turned into a map
-        return new ResponseEntity<>(getResultMapMapForResults(page), headers, HttpStatus.OK);
-    }
+
 }

@@ -39,7 +39,7 @@ public class ProcedureFhirResource {
      * @param id the id of the procedure to retrieve
      * @return the ResponseEntity with status 200 (OK) and with body the procedure, or with status 404 (Not Found)
      */
-    @GetMapping("/procedures/{id}")
+    @GetMapping("/Procedure/{id}")
     @Timed
     public String getProcedure(@PathVariable Long id) {
         log.debug("REST request to get Procedure : {}", id);
