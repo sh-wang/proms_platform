@@ -54,7 +54,7 @@ public class ProcedureFhirResource {
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(procedureFhir);
         return encode;
     }

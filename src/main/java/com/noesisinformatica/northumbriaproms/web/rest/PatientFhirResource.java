@@ -45,6 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -114,11 +115,10 @@ public class PatientFhirResource {
             patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         }
 
-
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
     }
@@ -183,4 +183,5 @@ public class PatientFhirResource {
 
         return patients;
     }
+
 }
