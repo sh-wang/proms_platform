@@ -31,9 +31,6 @@ import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
-import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
-import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
-import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
@@ -45,15 +42,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import springfox.documentation.spring.web.json.Json;
 
-import javax.validation.Valid;
-import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * REST controller for managing Patient.
@@ -66,11 +59,8 @@ public class PatientFhirResource {
     private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
-    private final PatientQueryService patientQueryService;
-
 
     public PatientFhirResource(PatientService patientService, PatientQueryService patientQueryService) {
-        this.patientQueryService = patientQueryService;
         this.patientService = patientService;
     }
 
@@ -142,8 +132,8 @@ public class PatientFhirResource {
         // here we create a long String containing all patients' info in fhir standard, json format
         String patients = "[";
         int i, patientCount;
-//        patientCount = page.getContent().size();
-        patientCount = (int)patientService.getSize();
+        patientCount = page.getContent().size();
+//        patientCount = (int)patientService.getSize();
         if(patientCount == 0){ return "[]"; }
         for (i = 0; i < patientCount - 1; i++) {
             patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
