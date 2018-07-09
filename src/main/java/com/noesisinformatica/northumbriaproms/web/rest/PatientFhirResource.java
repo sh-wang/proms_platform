@@ -65,10 +65,8 @@ public class PatientFhirResource {
     private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
-    private final PatientQueryService patientQueryService;
 
     public PatientFhirResource(PatientService patientService, PatientQueryService patientQueryService) {
-        this.patientQueryService = patientQueryService;
         this.patientService = patientService;
     }
 
@@ -83,6 +81,8 @@ public class PatientFhirResource {
     @Timed
     public String getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient in FHIR format: {}", id);
+        if (id > patientService.getSize()){return "[]";}
+
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
         // add name
@@ -118,7 +118,7 @@ public class PatientFhirResource {
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
     }
@@ -139,13 +139,14 @@ public class PatientFhirResource {
         // here we create a long String containing all patients' info in fhir standard, json format
         String patients = "[";
         int i, patientCount;
-        patientCount = page.getContent().size();
+//        patientCount = page.getContent().size();
+        patientCount = (int)patientService.getSize();
         if(patientCount == 0){ return "[]"; }
         for (i = 0; i < patientCount - 1; i++) {
             patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
         }
+        patients = patients + getPatient(page.getContent().get(i).getId()) + "]" + patientCount;
 
-        patients = patients + getPatient(page.getContent().get(i).getId()) + "]";
         return patients;
     }
 
