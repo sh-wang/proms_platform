@@ -60,6 +60,20 @@ public class QuestionnaireFhirResource {
         return encode;
     }
 
+    public org.hl7.fhir.dstu3.model.Questionnaire getQuestionnaireResource(@PathVariable Long id){
+        log.debug("REST request to get Questionnaire in FHIR : {}", id);
+        Questionnaire questionnaire = questionnaireService.findOne(id);
+        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
+
+        questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);
+        questionnaireFhir.setId(id.toString());
+        questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
+        questionnaireFhir.setName(questionnaire.getName());
+        questionnaireFhir.setCopyright(questionnaire.getCopyright());
+
+        return questionnaireFhir;
+    }
+
 
     /**
      * GET  /questionnaires : get all the questionnaires.
