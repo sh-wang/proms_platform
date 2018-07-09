@@ -57,23 +57,28 @@ import java.util.*;
 public class QuestionnaireResponseFhirResource {
     private final Logger log = LoggerFactory.getLogger(QuestionnaireResponseFhirResource.class);
 
-    private final FollowupActionQueryService followupActionQueryService;
+    //    private final FollowupActionQueryService followupActionQueryScervice;
     private final FollowupActionService followupActionService;
     private final PatientFhirResource patientFhirResource;
-    private final FollowupActionResource followupActionResource;
+    //    private final FollowupActionResource followupActionResource;
     private final ProcedureFhirResource procedureFhirResource;
     private final QuestionnaireFhirResource questionnaireFhirResource;
-    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource, ProcedureFhirResource procedureFhirResource,QuestionnaireFhirResource questionnaireFhirResource){
+    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService,
+//                                             FollowupActionQueryService followupActionQueryService,
+                                             PatientFhirResource patientFhirResource,
+//                                             FollowupActionResource followupActionResource,
+                                             ProcedureFhirResource procedureFhirResource,
+                                             QuestionnaireFhirResource questionnaireFhirResource){
 
         this.followupActionService = followupActionService;
-        this.followupActionQueryService = followupActionQueryService;
+//        this.followupActionQueryService = followupActionQueryService;
         this.patientFhirResource = patientFhirResource;
-        this.followupActionResource = followupActionResource;
+//        this.followupActionResource = followupActionResource;
         this.procedureFhirResource = procedureFhirResource;
         this.questionnaireFhirResource = questionnaireFhirResource;
     }
 
-    private final String defaultPath = "localhost:8080/api/fhir/";
+//    private final String defaultPath = "localhost:8080/api/fhir/";
 
 
     /**
@@ -87,23 +92,21 @@ public class QuestionnaireResponseFhirResource {
     public String getByFollowupActionId(@PathVariable Long id){
         log.debug("REST request to get questionnaire response in FHIR by followup-action ID", id);
         FollowupAction followupAction = followupActionService.findOne(id);
-
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse=
             new org.hl7.fhir.dstu3.model.QuestionnaireResponse();
-
 
         questionnaireResponse.setId(id.toString());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         // add patient as resource url, in the format of fhir standard, json format
-        Patient patient = followupAction.getPatient();
 //        r.setReference(String.valueOf(patient));
-        String patientInfo = patientFhirResource.getPatient(patient.getId());
+//        String patientInfo = patientFhirResource.getPatient(patient.getId());
 //        r.setReference(defaultPath + "patients/"+patient.getId());
-////        questionnaireResponse.setSource(r);
-        patientInfo.replaceAll("\\\\([\"/])", "$1");
-        org.hl7.fhir.dstu3.model.Patient patientFHIR = patientFhirResource.getPatientResource(patient.getId());
-        org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference(patientFHIR);
-        questionnaireResponse.setSource(r);
+//        questionnaireResponse.setSource(r);
+        org.hl7.fhir.dstu3.model.Patient patientFHIR = patientFhirResource.getPatientResource(
+            followupAction.getPatient().getId());
+        org.hl7.fhir.dstu3.model.Reference refePa = new org.hl7.fhir.dstu3.model.Reference(patientFHIR);
+//        questionnaireResponse.setSource(refePa);
+        questionnaireResponse.setSubject(refePa);
 
 //        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
 //        org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
@@ -111,24 +114,23 @@ public class QuestionnaireResponseFhirResource {
 //        questionnaireResponse.setBasedOn(Collections.singletonList(r2));
 
         // add patient's procedureBooking as resource url, in the format of fhir standard, json format.
-        ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
-
 //        r4.setReference(defaultPath + "procedures/"+procedureBooking.getId());
-        String procedure = procedureFhirResource.getProcedure(procedureBooking.getId());
-        Procedure procedureFHIR = procedureFhirResource.getProcedureResource(procedureBooking.getId());
-        org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference(procedureFHIR);
+//        String procedure = procedureFhirResource.getProcedure(procedureBooking.getId());
+
+        Procedure procedureFHIR = procedureFhirResource.getProcedureResource(followupAction.getCareEvent()
+            .getFollowupPlan().getProcedureBooking().getId());
+        org.hl7.fhir.dstu3.model.Reference refePr = new org.hl7.fhir.dstu3.model.Reference(procedureFHIR);
 //        r4.setReference(procedureFHIR);
-        questionnaireResponse.addParent(r4);
+        questionnaireResponse.addParent(refePr);
 
-        // add questionnaire patient's need to accomplish, in the format of fhir standard, json format.
-        Questionnaire questionnaire = followupAction.getQuestionnaire();
-
-        String questionnairejson = questionnaireFhirResource.getQuestionnaire(questionnaire.getId());
-        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFHIR = questionnaireFhirResource.getQuestionnaireResource(questionnaire.getId());
+        // add patient's questionnaire need to accomplish, in the format of fhir standard, json format.
+//        String questionnairejson = questionnaireFhirResource.getQuestionnaire(questionnaire.getId());
+        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFHIR = questionnaireFhirResource
+            .getQuestionnaireResource(followupAction.getQuestionnaire().getId());
 //        r3.setReference(defaultPath + "questionnaires/"+questionnaire.getId());
-        org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference(questionnaireFHIR);
+        org.hl7.fhir.dstu3.model.Reference refeQu = new org.hl7.fhir.dstu3.model.Reference(questionnaireFHIR);
 //        r3.setReference(questionnairejson);
-        questionnaireResponse.setQuestionnaire(r3);
+        questionnaireResponse.setQuestionnaire(refeQu);
 
         // display each question and its corresponding answer for the questionnaire.
         if(!followupAction.getResponseItems().isEmpty()){
@@ -147,15 +149,13 @@ public class QuestionnaireResponseFhirResource {
             org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
             s.setValue(followupAction.getOutcomeComment());
             questionnaireResponse.addItem().addAnswer().setValue(s);
-
         }
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireResponse);
         return encode;
-
     }
 
 
@@ -167,17 +167,16 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-
-    @GetMapping("/Qquestionnaire-response")
+    @GetMapping("/Questionnaire-response")
     @Timed
     public String searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
         Page<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/fhir/_search/followup-actions");
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query,
+            page, "/api/fhir/_search/followup-actions");
 
-
-        ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-
+        ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>
+            (page.getContent(), headers, HttpStatus.OK);
 
         // identical to method above, but query only supports NHS number and patient's name
         String questionnaireResponses = "[";
@@ -188,16 +187,21 @@ public class QuestionnaireResponseFhirResource {
             Long id = ((FollowupAction) o).getId();
             questionnaireResponses += getByFollowupActionId(id) + ",";
         }
-
         Object o1 = responseEntity.getBody().get(i);
         Long id1 =((FollowupAction) o1).getId();
-        questionnaireResponses += getByFollowupActionId(id1) ;
+        questionnaireResponses += getByFollowupActionId(id1) + "]";
 
         return questionnaireResponses;
     }
 
 
-    // currently not work
+    /**
+     * GET  /questionnaire-response : get all the questionnaires
+     * responses by follow up id.
+     *
+     * @param pageable the pagination information
+     * @return all questionnaires response in FHIR
+     */
     @GetMapping("/Questionnaire-response/all")
     @Timed
     public String getAllQusetionnaireResponse(Pageable pageable){

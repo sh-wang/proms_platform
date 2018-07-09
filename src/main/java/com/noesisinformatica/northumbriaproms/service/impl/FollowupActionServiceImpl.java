@@ -200,23 +200,6 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         return result;
     }
 
-    /**
-     * Search for the patient corresponding to the query.
-     *
-     * @param query the query of the search
-     * @param pageable the pagination information
-     * @return the list of entities
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public Page<FollowupAction> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of Procedures for query {}", query);
-        Page<FollowupAction> result = followupActionSearchRepository.search(queryStringQuery(query), pageable);
-        return result;
-
-    }
-
-
 
     /**
      * Search for the followupAction corresponding to the query.
@@ -425,5 +408,22 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         return SortBuilders.fieldSort(sortField).order(sortOrder).unmappedType("string");
+    }
+
+
+    /**
+     * Search for the patient corresponding to the query.
+     *
+     * @param query the query of the search
+     * @param pageable the pagination information
+     * @return the list of entities
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Page<FollowupAction> search(String query, Pageable pageable) {
+        log.debug("Request to search for a page of Procedures for query {}", query);
+        Page<FollowupAction> result = followupActionSearchRepository.search(queryStringQuery(query), pageable);
+        return result;
+
     }
 }
