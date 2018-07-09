@@ -74,7 +74,7 @@ public class QuestionnaireResponseFhirResource {
      * @param id the id of the followup-action
      * @return the ResponseEntity with status 200 (OK) and with body the QuestionnaireResponse, or with status 404 (Not Found)
      */
-    @GetMapping("/questionnaire-response/{id}")
+    @GetMapping("/Questionnaire-response/{id}")
     @Timed
     public String getByFollowupActionId(@PathVariable Long id){
         FollowupAction followupAction = followupActionService.findOne(id);

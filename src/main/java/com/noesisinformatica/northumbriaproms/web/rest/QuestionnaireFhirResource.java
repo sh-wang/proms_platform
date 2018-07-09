@@ -69,7 +69,7 @@ public class QuestionnaireFhirResource {
      * @param pageable the pagination information
      * @return all questionnaires in FHIR
      */
-    @GetMapping("/questionnaires")
+    @GetMapping("/Questionnaire/all")
     @Timed
     public String getAllQuestionnaires(Pageable pageable) {
         log.debug("REST request to get a page of Questionnaires in FHIR");

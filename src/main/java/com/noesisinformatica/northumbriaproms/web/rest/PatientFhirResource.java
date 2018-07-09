@@ -130,7 +130,7 @@ public class PatientFhirResource {
      * @param pageable the pagination information
      * @return a string with all patients information in FHIR format
      */
-    @GetMapping("/Patient")
+    @GetMapping("/Patient/all")
     @Timed
     public String getAllPatient(Pageable pageable) {
         log.debug("REST request to get Patients in FHIR format by criteria: {}");
@@ -158,7 +158,7 @@ public class PatientFhirResource {
      * @param pageable the pagination information
      * @return the result of the search in FHIR
      */
-    @GetMapping("/_search/patients")
+    @GetMapping("/Patient")
     @Timed
     public String searchPatients(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
