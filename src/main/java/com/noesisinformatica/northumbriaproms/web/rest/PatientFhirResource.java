@@ -109,7 +109,7 @@ public class PatientFhirResource {
         for (i = 0; i < patientCount - 1; i++) {
             patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
         }
-        patients = patients + getPatient(page.getContent().get(i).getId()) + "]" + patientCount;
+        patients = patients + getPatient(page.getContent().get(i).getId()) + "]";
 
         return patients;
     }
