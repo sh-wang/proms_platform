@@ -35,6 +35,7 @@ import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.*;
+import org.hl7.fhir.dstu3.model.Procedure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -100,7 +101,8 @@ public class QuestionnaireResponseFhirResource {
 //        r.setReference(defaultPath + "patients/"+patient.getId());
 ////        questionnaireResponse.setSource(r);
         patientInfo.replaceAll("\\\\([\"/])", "$1");
-        org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference(patientInfo);
+        org.hl7.fhir.dstu3.model.Patient patientFHIR = patientFhirResource.getPatientResource(patient.getId());
+        org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference(patientFHIR);
         questionnaireResponse.setSource(r);
 
 //        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
@@ -110,18 +112,22 @@ public class QuestionnaireResponseFhirResource {
 
         // add patient's procedureBooking as resource url, in the format of fhir standard, json format.
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
-        org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
+
 //        r4.setReference(defaultPath + "procedures/"+procedureBooking.getId());
         String procedure = procedureFhirResource.getProcedure(procedureBooking.getId());
-        r4.setReference(procedure);
+        Procedure procedureFHIR = procedureFhirResource.getProcedureResource(procedureBooking.getId());
+        org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference(procedureFHIR);
+//        r4.setReference(procedureFHIR);
         questionnaireResponse.addParent(r4);
 
         // add questionnaire patient's need to accomplish, in the format of fhir standard, json format.
         Questionnaire questionnaire = followupAction.getQuestionnaire();
-        org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
+
         String questionnairejson = questionnaireFhirResource.getQuestionnaire(questionnaire.getId());
+        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFHIR = questionnaireFhirResource.getQuestionnaireResource(questionnaire.getId());
 //        r3.setReference(defaultPath + "questionnaires/"+questionnaire.getId());
-        r3.setReference(questionnairejson);
+        org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference(questionnaireFHIR);
+//        r3.setReference(questionnairejson);
         questionnaireResponse.setQuestionnaire(r3);
 
         // display each question and its corresponding answer for the questionnaire.

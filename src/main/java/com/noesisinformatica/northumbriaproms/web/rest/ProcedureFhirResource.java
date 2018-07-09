@@ -39,18 +39,8 @@ public class ProcedureFhirResource {
     @GetMapping("/Procedure/{id}")
     @Timed
     public String getProcedure(@PathVariable Long id) {
-        log.debug("REST request to get Procedure in FHIR : {}", id);
-        Procedure procedure = procedureService.findOne(id);
+        org.hl7.fhir.dstu3.model.Procedure procedureFhir = getProcedureResource(id);
 
-        org.hl7.fhir.dstu3.model.Procedure procedureFhir = new org.hl7.fhir.dstu3.model.Procedure();
-        procedureFhir.setId(id.toString());
-        //currently no status data
-        procedureFhir.setStatus(org.hl7.fhir.dstu3.model.Procedure.ProcedureStatus.UNKNOWN);
-
-        CodeableConcept codeableConcept = new CodeableConcept();
-        codeableConcept.addCoding().setCode(procedure.getLocalCode().toString()).
-            setDisplay(procedure.getName().substring(1, procedure.getName().length()));
-        procedureFhir.setCode(codeableConcept);
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();

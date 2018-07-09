@@ -43,15 +43,8 @@ public class QuestionnaireFhirResource {
     @GetMapping("/Questionnaire/{id}")
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
-        log.debug("REST request to get Questionnaire in FHIR : {}", id);
-        Questionnaire questionnaire = questionnaireService.findOne(id);
-        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
 
-        questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);
-        questionnaireFhir.setId(id.toString());
-        questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
-        questionnaireFhir.setName(questionnaire.getName());
-        questionnaireFhir.setCopyright(questionnaire.getCopyright());
+        org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = getQuestionnaireResource(id);
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();

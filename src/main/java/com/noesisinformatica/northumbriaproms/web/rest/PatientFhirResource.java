@@ -77,7 +77,7 @@ public class PatientFhirResource {
         log.debug("REST request to get Patient in FHIR format: {}", id);
         if (id > patientService.getSize()){return "[]";}
 
-        org.hl7.fhir.dstu3.model.Patient patientFhir = getFHIRPatient(id);
+        org.hl7.fhir.dstu3.model.Patient patientFhir = getPatientResource(id);
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
@@ -150,7 +150,7 @@ public class PatientFhirResource {
     }
 
 
-    public org.hl7.fhir.dstu3.model.Patient getFHIRPatient(Long id) {
+    public org.hl7.fhir.dstu3.model.Patient getPatientResource(Long id) {
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
         if (id > patientService.getSize()){return patientFhir;}
