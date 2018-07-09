@@ -65,7 +65,7 @@ public class ProcedureFhirResource {
      * @param pageable the pagination information
      * @return all procedures
      */
-    @GetMapping("/procedures")
+    @GetMapping("/Procedure/all")
     @Timed
     public String getAllProcedures(Pageable pageable) {
         log.debug("REST request to get a page of Procedures in FHIR");

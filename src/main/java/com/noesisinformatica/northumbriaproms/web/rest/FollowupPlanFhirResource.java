@@ -47,7 +47,7 @@ public class FollowupPlanFhirResource {
      * @param id the id of the procedureBooking to retrieve followupPlan for
      * @return the ResponseEntity with status 200 (OK) and with body the followupPlan, or with status 404 (Not Found)
      */
-    @GetMapping("/followupPlan/{id}")
+    @GetMapping("/FollowupPlan/{id}")
     @Timed
     public String getFollowupPlanForBookingId(@PathVariable Long id) {
         log.debug("REST request to get FollowupPlan for ProcedureBooking : {}", id);

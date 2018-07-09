@@ -88,7 +88,7 @@ public class QuestionnaireResponseFhirResource {
      * @param id the id of the followup-action
      * @return the corresponding followup-action
      */
-    @GetMapping("/questionnaire-response/{id}")
+    @GetMapping("/Questionnaire-response/{id}")
     @Timed
     public String getByFollowupActionId(@PathVariable Long id){
         log.debug("REST request to get questionnaire response in FHIR by followup-action ID", id);
