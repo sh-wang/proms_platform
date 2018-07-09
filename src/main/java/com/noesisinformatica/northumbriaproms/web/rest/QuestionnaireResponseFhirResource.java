@@ -26,6 +26,7 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
+import ca.uhn.fhir.parser.JsonParser;
 import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.*;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
@@ -43,6 +44,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.spring.web.json.Json;
 
 import java.util.*;
 
@@ -58,22 +60,23 @@ public class QuestionnaireResponseFhirResource {
     private final FollowupActionService followupActionService;
     private final PatientFhirResource patientFhirResource;
     private final FollowupActionResource followupActionResource;
+<<<<<<< HEAD
 
     public QuestionnaireResponseFhirResource( FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource){
+=======
+    private final ProcedureFhirResource procedureFhirResource;
+    private final QuestionnaireFhirResource questionnaireFhirResource;
+    public QuestionnaireResponseFhirResource(FollowupActionService followupActionService, FollowupActionQueryService followupActionQueryService, PatientFhirResource patientFhirResource, FollowupActionResource followupActionResource, ProcedureFhirResource procedureFhirResource,QuestionnaireFhirResource questionnaireFhirResource){
+>>>>>>> d2fb4d8bb1175bf9c231c49b0f45ea6595c1bfc5
         this.followupActionService = followupActionService;
         this.followupActionQueryService = followupActionQueryService;
         this.patientFhirResource = patientFhirResource;
         this.followupActionResource = followupActionResource;
+        this.procedureFhirResource = procedureFhirResource;
+        this.questionnaireFhirResource = questionnaireFhirResource;
     }
 
     private final String defaultPath = "localhost:8080/api/fhir/";
-
-    /**
-     * Utility private method for transforming a {@link FacetedPage} into a {@link Map} object with results
-     * and categories.
-     * @param page the page of results
-     * @return results as a Map
-     */
 
 
     /**
@@ -90,17 +93,19 @@ public class QuestionnaireResponseFhirResource {
 
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse=
             new org.hl7.fhir.dstu3.model.QuestionnaireResponse();
-        org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference();
+
 
         questionnaireResponse.setId(id.toString());
         questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         // add patient as resource url, in the format of fhir standard, json format
         Patient patient = followupAction.getPatient();
 //        r.setReference(String.valueOf(patient));
-//        String patientInfo = patientFhirResource.getPatient(patient.getId());
-        r.setReference(defaultPath + "patients/"+patient.getId());
+        String patientInfo = patientFhirResource.getPatient(patient.getId());
+//        r.setReference(defaultPath + "patients/"+patient.getId());
+////        questionnaireResponse.setSource(r);
+        patientInfo.replaceAll("\\\\([\"/])", "$1");
+        org.hl7.fhir.dstu3.model.Reference r = new org.hl7.fhir.dstu3.model.Reference(patientInfo);
         questionnaireResponse.setSource(r);
-
 
 //        FollowupPlan followupPlan = followupAction.getCareEvent().getFollowupPlan();
 //        org.hl7.fhir.dstu3.model.Reference r2 = new org.hl7.fhir.dstu3.model.Reference();
@@ -110,13 +115,17 @@ public class QuestionnaireResponseFhirResource {
         // add patient's procedureBooking as resource url, in the format of fhir standard, json format.
         ProcedureBooking procedureBooking = followupAction.getCareEvent().getFollowupPlan().getProcedureBooking();
         org.hl7.fhir.dstu3.model.Reference r4 = new org.hl7.fhir.dstu3.model.Reference();
-        r4.setReference(defaultPath + "procedures/"+procedureBooking.getId());
+//        r4.setReference(defaultPath + "procedures/"+procedureBooking.getId());
+        String procedure = procedureFhirResource.getProcedure(procedureBooking.getId());
+        r4.setReference(procedure);
         questionnaireResponse.addParent(r4);
 
         // add questionnaire patient's need to accomplish, in the format of fhir standard, json format.
         Questionnaire questionnaire = followupAction.getQuestionnaire();
         org.hl7.fhir.dstu3.model.Reference r3 = new org.hl7.fhir.dstu3.model.Reference();
-        r3.setReference(defaultPath + "questionnaires/"+questionnaire.getId());
+        String questionnairejson = questionnaireFhirResource.getQuestionnaire(questionnaire.getId());
+//        r3.setReference(defaultPath + "questionnaires/"+questionnaire.getId());
+        r3.setReference(questionnairejson);
         questionnaireResponse.setQuestionnaire(r3);
 
         // display each question and its corresponding answer for the questionnaire.
@@ -156,7 +165,11 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
+<<<<<<< HEAD
     @GetMapping("/_search/followup-actions")
+=======
+    @GetMapping("/Qquestionnaire-response")
+>>>>>>> d2fb4d8bb1175bf9c231c49b0f45ea6595c1bfc5
     @Timed
     public String searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
@@ -186,7 +199,7 @@ public class QuestionnaireResponseFhirResource {
 
 
     // currently not work
-    @GetMapping("/questionnaire-responses")
+    @GetMapping("/Questionnaire-response/all")
     @Timed
     public String getAllQusetionnaireResponse(Pageable pageable){
         log.debug("REST request to get all questionnaire response in FHIR");
@@ -203,5 +216,13 @@ public class QuestionnaireResponseFhirResource {
         questionnaireRes = questionnaireRes + getByFollowupActionId(page.getContent().get(i).getId()) + "]";
         return questionnaireRes;
     }
+
+
+//    public String myJsonFilter(String foo) {
+//        foo.replaceAll("\"", "\\\"");
+//        foo.replaceAll("\"", "\\\\\"");
+//        foo.replace("\"", "\\\"");
+//        return foo;
+//    }
 }
 

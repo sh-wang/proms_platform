@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
 
 
 /**
@@ -45,7 +43,7 @@ public class QuestionnaireFhirResource {
     @GetMapping("/Questionnaire/{id}")
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
-        log.debug("REST request to get Questionnaire : {}", id);
+        log.debug("REST request to get Questionnaire in FHIR : {}", id);
         Questionnaire questionnaire = questionnaireService.findOne(id);
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
 
@@ -57,7 +55,7 @@ public class QuestionnaireFhirResource {
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireFhir);
         return encode;
     }

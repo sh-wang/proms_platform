@@ -31,9 +31,6 @@ import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
-import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
-import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
-import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
@@ -46,13 +43,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.net.URI;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * REST controller for managing Patient.
@@ -65,10 +59,8 @@ public class PatientFhirResource {
     private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
-    private final PatientQueryService patientQueryService;
 
     public PatientFhirResource(PatientService patientService, PatientQueryService patientQueryService) {
-        this.patientQueryService = patientQueryService;
         this.patientService = patientService;
     }
 
@@ -83,6 +75,8 @@ public class PatientFhirResource {
     @Timed
     public String getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient in FHIR format: {}", id);
+        if (id > patientService.getSize()){return "[]";}
+
         Patient patient = patientService.findOne(id);
         org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
         // add name
@@ -114,11 +108,10 @@ public class PatientFhirResource {
             patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         }
 
-
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
-        p.setPrettyPrint(true);
+        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
     }
@@ -140,19 +133,23 @@ public class PatientFhirResource {
         String patients = "[";
         int i, patientCount;
         patientCount = page.getContent().size();
+//        patientCount = (int)patientService.getSize();
         if(patientCount == 0){ return "[]"; }
         for (i = 0; i < patientCount - 1; i++) {
             patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
         }
+        patients = patients + getPatient(page.getContent().get(i).getId()) + "]" + patientCount;
 
-        patients = patients + getPatient(page.getContent().get(i).getId()) + "]";
         return patients;
     }
 
 
     /**
-     * SEARCH  /_search/patients?query=:query : search for the patient corresponding
+     * SEARCH  /Patient?query=:query : search for the patient corresponding
      * to the query.
+     * example: /Patient?query=1000000000 : search for patient with nhs number
+     * 1000000000
+     * query can be name or nhsNumber
      *
      * @param query the query of the patient search
      * @param pageable the pagination information
@@ -180,4 +177,5 @@ public class PatientFhirResource {
 
         return patients;
     }
+
 }
