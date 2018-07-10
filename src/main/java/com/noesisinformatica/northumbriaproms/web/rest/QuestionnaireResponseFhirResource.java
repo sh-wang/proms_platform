@@ -91,7 +91,9 @@ public class QuestionnaireResponseFhirResource {
     @Timed
     public String getByFollowupActionId(@PathVariable Long id){
         log.debug("REST request to get questionnaire response in FHIR by followup-action ID", id);
+
         FollowupAction followupAction = followupActionService.findOne(id);
+        if (followupAction == null){return "[]";}
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse=
             new org.hl7.fhir.dstu3.model.QuestionnaireResponse();
 

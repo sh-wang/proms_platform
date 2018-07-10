@@ -73,10 +73,4 @@ public interface PatientService {
      * @return the list of entities
      */
     Page<Patient> search(String query, Pageable pageable);
-
-    /**
-     *
-     * @return the count of patients
-     */
-    long getSize();
 }

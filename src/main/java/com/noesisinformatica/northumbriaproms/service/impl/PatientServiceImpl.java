@@ -131,13 +131,4 @@ public class PatientServiceImpl implements PatientService{
         Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
         return result;
     }
-
-    /**
-     *
-     * @return the count of patients
-     */
-    @Override
-    public long getSize(){
-        return patientRepository.count();
-    }
 }

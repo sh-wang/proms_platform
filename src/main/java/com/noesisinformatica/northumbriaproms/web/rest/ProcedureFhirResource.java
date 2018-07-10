@@ -65,8 +65,11 @@ public class ProcedureFhirResource {
     @Timed
     public String getProcedure(@PathVariable Long id) {
         log.debug("REST request to get Procedure in FHIR : {}", id);
-        org.hl7.fhir.dstu3.model.Procedure procedureFhir = getProcedureResource(id);
 
+        org.hl7.fhir.dstu3.model.Procedure procedureFhir = getProcedureResource(id);
+        if (procedureFhir == null){return "[]";}
+
+        //FHIR conversion
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         p.setPrettyPrint(false);
@@ -83,6 +86,7 @@ public class ProcedureFhirResource {
      */
     public org.hl7.fhir.dstu3.model.Procedure getProcedureResource(Long id){
         Procedure procedure = procedureService.findOne(id);
+        if (procedure == null){ return null; }
         org.hl7.fhir.dstu3.model.Procedure procedureFhir = new org.hl7.fhir.dstu3.model.Procedure();
 
         procedureFhir.setId(id.toString());

@@ -68,7 +68,9 @@ public class QuestionnaireFhirResource {
     @Timed
     public String getQuestionnaire(@PathVariable Long id) {
         log.debug("REST request to get Questionnaire in FHIR : {}", id);
+
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = getQuestionnaireResource(id);
+        if (questionnaireFhir == null){ return  "[]"; }
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
@@ -86,6 +88,7 @@ public class QuestionnaireFhirResource {
      */
     public org.hl7.fhir.dstu3.model.Questionnaire getQuestionnaireResource(Long id){
         Questionnaire questionnaire = questionnaireService.findOne(id);
+        if (questionnaire == null){ return null;}
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
 
         questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);

@@ -75,16 +75,62 @@ public class PatientFhirResource {
     @Timed
     public String getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient in FHIR format: {}", id);
-        if (id > patientService.getSize()){return "[]";}
 
         org.hl7.fhir.dstu3.model.Patient patientFhir = getPatientResource(id);
+        if (patientFhir == null){ return "[]"; }
 
+        //FHIR conversion
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         ctx.newJsonParser();
         p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(patientFhir);
         return encode;
+    }
+
+
+    /**
+     * Get the FHIR dust3 patient with ID id
+     *
+     * @param id the id of the patient to retrieve
+     * @return the patient
+     */
+    public org.hl7.fhir.dstu3.model.Patient getPatientResource(Long id) {
+        Patient patient = patientService.findOne(id);
+        if (patient == null){ return null;}
+        org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
+
+        // add name
+        patientFhir.addName().setFamily(patient.getFamilyName()).addGiven(patient.getGivenName());
+
+        // add dob
+        ZoneId zoneId = ZoneId.systemDefault();
+        ZonedDateTime btd = patient.getBirthDate().atStartOfDay(zoneId);
+        patientFhir.setBirthDate(Date.from(btd.toInstant()));
+
+        // add Email
+        patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
+        patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
+
+        // add NHS number
+        if (patient.getNhsNumber() == null){
+            patientFhir.addIdentifier().setSystem("nhsNumber").setValue("0000000000");
+        }else{
+            patientFhir.addIdentifier().setSystem("nhsNumber").setValue(patient.getNhsNumber().toString());
+        }
+
+        //add gender
+        if (patient.getGender().equals(GenderType.MALE)){
+            patientFhir.setGender(Enumerations.AdministrativeGender.MALE);
+        }else if(patient.getGender().equals(GenderType.FEMALE)){
+            patientFhir.setGender(Enumerations.AdministrativeGender.FEMALE);
+        }else if(patient.getGender().equals(GenderType.OTHER)){
+            patientFhir.setGender(Enumerations.AdministrativeGender.OTHER);
+        }else if(patient.getGender().equals(GenderType.UNKNOWN)){
+            patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
+        }
+
+        return patientFhir;
     }
 
 
@@ -147,47 +193,5 @@ public class PatientFhirResource {
         patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
 
         return patients;
-    }
-
-
-    /**
-     * Get the FHIR dust3 patient with ID id
-     *
-     * @param id the id of the patient to retrieve
-     * @return the patient
-     */
-    public org.hl7.fhir.dstu3.model.Patient getPatientResource(Long id) {
-        Patient patient = patientService.findOne(id);
-        org.hl7.fhir.dstu3.model.Patient patientFhir = new org.hl7.fhir.dstu3.model.Patient();
-        if (id > patientService.getSize()){return patientFhir;}
-        // add name
-        patientFhir.addName().setFamily(patient.getFamilyName()).addGiven(patient.getGivenName());
-        // add dob
-        ZoneId zoneId = ZoneId.systemDefault();
-        ZonedDateTime btd = patient.getBirthDate().atStartOfDay(zoneId);
-        patientFhir.setBirthDate(Date.from(btd.toInstant()));
-        // add Email
-        patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
-        patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
-
-        // add NHS number
-        if (patient.getNhsNumber() == null){
-            patientFhir.addIdentifier().setSystem("nhsNumber").setValue("0000000000");
-        }else{
-            patientFhir.addIdentifier().setSystem("nhsNumber").setValue(patient.getNhsNumber().toString());
-        }
-
-        //add gender
-        if (patient.getGender().equals(GenderType.MALE)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.MALE);
-        }else if(patient.getGender().equals(GenderType.FEMALE)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.FEMALE);
-        }else if(patient.getGender().equals(GenderType.OTHER)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.OTHER);
-        }else if(patient.getGender().equals(GenderType.UNKNOWN)){
-            patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
-        }
-
-        return patientFhir;
     }
 }
