@@ -115,14 +115,14 @@ public class ProcedureFhirResource {
         Page<Procedure> page = procedureService.findAll(pageable);
 
         String procedures = "[";
-        int i, procedureCount;
-        procedureCount = page.getContent().size();
+        long i, procedureCount;
+        procedureCount = page.getTotalElements();
         if(procedureCount == 0){ return "[]"; }
-        for (i = 0; i < procedureCount - 1; i++) {
-            procedures = procedures + getProcedure(page.getContent().get(i).getId()) + ",";
+        for (i = 1; i < procedureCount; i++) {
+            procedures = procedures + getProcedure(i) + ",";
         }
 
-        procedures = procedures + getProcedure(page.getContent().get(i).getId()) + "]";
+        procedures = procedures + getProcedure(i) + "]";
         return procedures;
     }
 }

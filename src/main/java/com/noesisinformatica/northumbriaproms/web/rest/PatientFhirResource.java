@@ -56,11 +56,11 @@ import java.util.List;
 public class PatientFhirResource {
     private final Logger log = LoggerFactory.getLogger(PatientFhirResource.class);
 
-    private static final String ENTITY_NAME = "patient";
+//    private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
 
-    public PatientFhirResource(PatientService patientService, PatientQueryService patientQueryService) {
+    public PatientFhirResource(PatientService patientService) {
         this.patientService = patientService;
     }
 
@@ -137,7 +137,6 @@ public class PatientFhirResource {
     /**
      * GET  /patients : get all the patients in FHIR format.
      *
-     * @param pageable the pagination information
      * @return a string with all patients information in FHIR format
      */
     @GetMapping("/Patient/all")
@@ -148,14 +147,13 @@ public class PatientFhirResource {
 
         // here we create a long String containing all patients' info in fhir standard, json format
         String patients = "[";
-        int i, patientCount;
-        patientCount = page.getContent().size();
-//        patientCount = (int)patientService.getSize();
+        long i, patientCount;
+        patientCount = page.getTotalElements();
         if(patientCount == 0){ return "[]"; }
-        for (i = 0; i < patientCount - 1; i++) {
-            patients = patients + getPatient(page.getContent().get(i).getId()) + ",";
+        for (i = 1; i < patientCount; i++) {
+            patients = patients + getPatient(i) + ",";
         }
-        patients = patients + getPatient(page.getContent().get(i).getId()) + "]";
+        patients = patients + getPatient(i) + "]";
 
         return patients;
     }

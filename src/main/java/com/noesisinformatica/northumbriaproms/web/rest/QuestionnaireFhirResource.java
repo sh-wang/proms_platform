@@ -114,14 +114,14 @@ public class QuestionnaireFhirResource {
         Page<Questionnaire> page = questionnaireService.findAll(pageable);
 
         String questionnaires = "[";
-        int i, questionCount;
-        questionCount = page.getContent().size();
+        long i, questionCount;
+        questionCount = page.getTotalElements();
         if (questionCount == 0){ return "[]";}
-        for (i = 0; i < questionCount - 1; i++){
-            questionnaires = questionnaires + getQuestionnaire(page.getContent().get(i).getId()) + ",";
+        for (i = 1; i < questionCount; i++){
+            questionnaires = questionnaires + getQuestionnaire(i) + ",";
         }
 
-        questionnaires = questionnaires + getQuestionnaire(page.getContent().get(i).getId()) + "]";
+        questionnaires = questionnaires + getQuestionnaire(i) + "]";
         return questionnaires;
     }
 }

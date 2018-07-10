@@ -206,19 +206,19 @@ public class QuestionnaireResponseFhirResource {
      */
     @GetMapping("/Questionnaire-response/all")
     @Timed
-    public String getAllQusetionnaireResponse(Pageable pageable){
+    public String getAllQuestionnaireResponse(Pageable pageable){
         log.debug("REST request to get all questionnaire response in FHIR");
         Page<FollowupAction> page = followupActionService.findAll(pageable);
 
         String questionnaireRes = "[";
-        int i, questionResCount;
-        questionResCount = page.getContent().size();
+        long i, questionResCount;
+        questionResCount = page.getTotalElements();
         if (questionResCount == 0){ return "[]";}
-        for (i = 0; i < questionResCount - 1; i++){
-            questionnaireRes = questionnaireRes + getByFollowupActionId(page.getContent().get(i).getId()) + ",";
+        for (i = 1; i < questionResCount; i++){
+            questionnaireRes = questionnaireRes + getByFollowupActionId(i) + ",";
         }
 
-        questionnaireRes = questionnaireRes + getByFollowupActionId(page.getContent().get(i).getId()) + "]";
+        questionnaireRes = questionnaireRes + getByFollowupActionId(i) + "]";
         return questionnaireRes;
     }
 
