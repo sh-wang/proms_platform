@@ -171,7 +171,7 @@ public class QuestionnaireResponseFhirResource {
      */
     @GetMapping("/Questionnaire-response")
     @Timed
-    public String searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<QuestionnaireResponse>> searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
         Page<FollowupAction> page = followupActionService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query,
@@ -179,6 +179,12 @@ public class QuestionnaireResponseFhirResource {
 
         ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>
             (page.getContent(), headers, HttpStatus.OK);
+        List<QuestionnaireResponse> fhirEntities = new ArrayList<>();
+
+        for(FollowupAction followupAction: page) {
+            QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
+            questionnaireResponse.
+        }
 
         // identical to method above, but query only supports NHS number and patient's name
         String questionnaireResponses = "[";
