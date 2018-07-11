@@ -135,16 +135,23 @@ public class PatientFhirResource {
         }
 
         // add Address
+
+
+
         Address address = addressService.findOne(id);
-        org.hl7.fhir.dstu3.model.Address addressFHIR = new org.hl7.fhir.dstu3.model.Address();
-        addressFHIR.setPostalCode(address.getPostalCode());
-        addressFHIR.setCity(address.getCity());
-        addressFHIR.setCountry(address.getCountry());
-        for(String line: address.getLines()){
-            addressFHIR.addLine(line);
+        if (address != null){
+            org.hl7.fhir.dstu3.model.Address addressFHIR = new org.hl7.fhir.dstu3.model.Address();
+            addressFHIR.setPostalCode(address.getPostalCode());
+            addressFHIR.setCity(address.getCity());
+            addressFHIR.setCountry(address.getCountry());
+
+            for(String line: address.getLines()){
+                addressFHIR.addLine(line);
+            }
+
+            patientFhir.addAddress(addressFHIR);
         }
 
-        patientFhir.addAddress(addressFHIR);
         return patientFhir;
     }
 
