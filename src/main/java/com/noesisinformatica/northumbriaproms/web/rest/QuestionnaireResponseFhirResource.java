@@ -169,38 +169,38 @@ public class QuestionnaireResponseFhirResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-    @GetMapping("/Questionnaire-response")
-    @Timed
-    public ResponseEntity<List<QuestionnaireResponse>> searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
-        log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
-        Page<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query,
-            page, "/api/fhir/_search/followup-actions");
-
-        ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>
-            (page.getContent(), headers, HttpStatus.OK);
-        List<QuestionnaireResponse> fhirEntities = new ArrayList<>();
-
-        for(FollowupAction followupAction: page) {
-            QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
-            questionnaireResponse.
-        }
-
-        // identical to method above, but query only supports NHS number and patient's name
-        String questionnaireResponses = "[";
-        int i;
-        if(responseEntity.getBody().size() == 0){ return "[]"; }
-        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
-            Object o = responseEntity.getBody().get(i);
-            Long id = ((FollowupAction) o).getId();
-            questionnaireResponses += getByFollowupActionId(id) + ",";
-        }
-        Object o1 = responseEntity.getBody().get(i);
-        Long id1 =((FollowupAction) o1).getId();
-        questionnaireResponses += getByFollowupActionId(id1) + "]";
-
-        return questionnaireResponses;
-    }
+//    @GetMapping("/Questionnaire-response")
+//    @Timed
+//    public ResponseEntity<List<QuestionnaireResponse>> searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
+//        log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
+//        Page<FollowupAction> page = followupActionService.search(query, pageable);
+//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query,
+//            page, "/api/fhir/_search/followup-actions");
+//
+//        ResponseEntity<List<FollowupAction>> responseEntity = new ResponseEntity<>
+//            (page.getContent(), headers, HttpStatus.OK);
+//        List<QuestionnaireResponse> fhirEntities = new ArrayList<>();
+//
+//        for(FollowupAction followupAction: page) {
+//            QuestionnaireResponse questionnaireResponse = new QuestionnaireResponse();
+//            questionnaireResponse.
+//        }
+//
+//        // identical to method above, but query only supports NHS number and patient's name
+//        String questionnaireResponses = "[";
+//        int i;
+//        if(responseEntity.getBody().size() == 0){ return "[]"; }
+//        for (i = 0; i < responseEntity.getBody().size() - 1; i++) {
+//            Object o = responseEntity.getBody().get(i);
+//            Long id = ((FollowupAction) o).getId();
+//            questionnaireResponses += getByFollowupActionId(id) + ",";
+//        }
+//        Object o1 = responseEntity.getBody().get(i);
+//        Long id1 =((FollowupAction) o1).getId();
+//        questionnaireResponses += getByFollowupActionId(id1) + "]";
+//
+//        return questionnaireResponses;
+//    }
 
 
     /**

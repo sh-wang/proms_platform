@@ -27,8 +27,10 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.noesisinformatica.northumbriaproms.domain.Address;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
+import com.noesisinformatica.northumbriaproms.service.AddressService;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
@@ -47,6 +49,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * REST controller for managing Patient.
@@ -59,9 +62,10 @@ public class PatientFhirResource {
 //    private static final String ENTITY_NAME = "patient";
 
     private final PatientService patientService;
-
-    public PatientFhirResource(PatientService patientService) {
+    private final AddressService addressService;
+    public PatientFhirResource(PatientService patientService, AddressService addressService) {
         this.patientService = patientService;
+        this.addressService = addressService;
     }
 
 
@@ -130,6 +134,17 @@ public class PatientFhirResource {
             patientFhir.setGender(Enumerations.AdministrativeGender.UNKNOWN);
         }
 
+        // add Address
+        Address address = addressService.findOne(id);
+        org.hl7.fhir.dstu3.model.Address addressFHIR = new org.hl7.fhir.dstu3.model.Address();
+        addressFHIR.setPostalCode(address.getPostalCode());
+        addressFHIR.setCity(address.getCity());
+        addressFHIR.setCountry(address.getCountry());
+        for(String line: address.getLines()){
+            addressFHIR.addLine(line);
+        }
+
+        patientFhir.addAddress(addressFHIR);
         return patientFhir;
     }
 
