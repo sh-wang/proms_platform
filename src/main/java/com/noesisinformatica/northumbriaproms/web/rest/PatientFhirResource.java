@@ -135,9 +135,6 @@ public class PatientFhirResource {
         }
 
         // add Address
-
-
-
         Address address = addressService.findOne(id);
         if (address != null){
             org.hl7.fhir.dstu3.model.Address addressFHIR = new org.hl7.fhir.dstu3.model.Address();
