@@ -175,24 +175,74 @@ public class QuestionnaireResponseFhirResource {
                                                               String locations, String patientIds,
                                                               String phases, String types,
                                                               String genders, String sides,
-                                                              String statuses,
                                                               String careEvents,
                                                               Integer minAge, Integer maxAge,
                                                               String token, Pageable pageable) {
+
+
         QueryModel query = new QueryModel();
-        query.setProcedures(Collections.singletonList(procedures));
-        query.setConsultants(Collections.singletonList(consultants));
-        query.setLocations(Collections.singletonList(locations));
-        query.setCareEvents(Collections.singletonList(careEvents));
-        query.setPatientIds(Collections.singletonList(patientIds));
-        query.setGenders(Collections.singletonList(genders));
-        query.setPhases(Collections.singletonList(phases));
-        query.setMaxAge(maxAge);
-        query.setMinAge(minAge);
-        query.setTypes(Collections.singletonList(types));
-        query.setSides(Collections.singletonList(sides));
-        query.setStatuses(Collections.singletonList(statuses));
-        query.setToken(token);
+        if(procedures!=null){
+            query.setProcedures(Collections.singletonList(procedures));
+        }else{
+            query.setProcedures(Collections.singletonList(""));
+        }
+        if(consultants!=null){
+            query.setConsultants(Collections.singletonList(consultants));
+        }else {
+            query.setConsultants(Collections.singletonList(""));
+        }
+        if(locations!=null){
+            query.setLocations(Collections.singletonList(locations));
+        }else{
+            query.setLocations(Collections.singletonList(""));
+        }
+        if(careEvents!=null){
+            query.setCareEvents(Collections.singletonList(careEvents));
+        }else{
+            query.setCareEvents(Collections.singletonList(""));
+        }
+        if(patientIds!=null){
+            query.setPatientIds(Collections.singletonList(patientIds));
+        }else{
+            query.setPatientIds(Collections.singletonList(""));
+        }
+        if(genders!=null){
+            query.setGenders(Collections.singletonList(genders));
+        }else{
+            query.setGenders(Collections.singletonList(""));
+        }
+        if(phases!=null){
+            query.setPhases(Collections.singletonList(phases));
+        }else{
+            query.setPhases(Collections.singletonList(""));
+        }
+        if(maxAge!=null){
+            query.setMaxAge(maxAge);
+        }else{
+            query.setMaxAge(100);
+        }
+        if(minAge!=null){
+            query.setMinAge(minAge);
+        }else{
+            query.setMinAge(0);
+        }
+        if(types!=null){
+            query.setTypes(Collections.singletonList(types));
+        }else{
+            query.setTypes(Collections.singletonList(""));
+        }
+        if(sides!=null){
+            query.setSides(Collections.singletonList(sides));
+        }else{
+            query.setSides(Collections.singletonList(""));
+        }
+        query.setStatuses(Collections.singletonList("STARTED"));
+        if(token!=null){
+            query.setToken(token);
+        }else{
+            query.setToken("");
+        }
+
 
         System.out.println(query);
 
@@ -213,6 +263,7 @@ public class QuestionnaireResponseFhirResource {
         }
 
         return new ResponseEntity<>(QuesResarray.toString(), headers, HttpStatus.OK);
+
     }
 
 
