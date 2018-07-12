@@ -34,6 +34,7 @@ import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
 import org.hl7.fhir.dstu3.model.*;
 import org.hl7.fhir.dstu3.model.Procedure;
 import org.slf4j.Logger;
@@ -164,17 +165,34 @@ public class QuestionnaireResponseFhirResource {
      * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
      * to the query.
      *
-     * @param query the query of the followupAction search
      * @param pageable the pagination information
      * @return the result of the search
      */
     @GetMapping("/Questionnaire-response")
     @Timed
-    public ResponseEntity<List<String>> searchQuestionnaireResponse(@RequestParam String query, Pageable pageable) {
-        log.debug("REST request to search for a page of FollowupActions in FHIR format for query {}", query);
-        Page<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query,
-            page, "/api/fhir/_search/followup-actions");
+    public ResponseEntity<List<String>> searchQuestionnaireResponse(String procedures, String consultants, String locations, String patientIds, String phases,  String types,  String genders,  String sides,  String statuses, String careEvents, Integer minAge, Integer maxAge, String token, Pageable pageable) {
+        QueryModel query = new QueryModel();
+        query.setProcedures(Collections.singletonList(procedures));
+        query.setConsultants(Collections.singletonList(consultants));
+        query.setLocations(Collections.singletonList(locations));
+        query.setCareEvents(Collections.singletonList(careEvents));
+        query.setPatientIds(Collections.singletonList(patientIds));
+        query.setGenders(Collections.singletonList(genders));
+        query.setPhases(Collections.singletonList(phases));
+        query.setMaxAge(maxAge);
+        query.setMinAge(minAge);
+        query.setTypes(Collections.singletonList(types));
+        query.setSides(Collections.singletonList(sides));
+        query.setStatuses(Collections.singletonList(statuses));
+        query.setToken(token);
+
+        System.out.println(query);
+
+
+        log.debug("REST request to search for a page of FollowupActions for query {}", query);
+        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(), page, "/api/fhir/Questionnaire-response");
+        // wrap results page in a response entity with faceted results turned into a map
 
         List<FollowupAction> list = page.getContent();
 
@@ -204,13 +222,14 @@ public class QuestionnaireResponseFhirResource {
     }
 
 
-    /**
-     * GET  /questionnaire-response : get all the questionnaires
-     * responses by follow up id.
-     *
-     * @param pageable the pagination information
-     * @return all questionnaires response in FHIR
-     */
+
+        /**
+         * GET  /questionnaire-response : get all the questionnaires
+         * responses by follow up id.
+         *
+         * @param pageable the pagination information
+         * @return all questionnaires response in FHIR
+         */
     @GetMapping("/Questionnaire-response/all")
     @Timed
     public String getAllQuestionnaireResponse(Pageable pageable){
