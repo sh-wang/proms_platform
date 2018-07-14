@@ -27,7 +27,11 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.noesisinformatica.northumbriaproms.domain.Address;
+import com.noesisinformatica.northumbriaproms.domain.FollowupAction;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.AddressService;
@@ -191,7 +195,7 @@ public class PatientFhirResource {
      */
     @GetMapping("/Patient")
     @Timed
-    public String searchPatients(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<String> searchPatients(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
         Page<Patient> page = patientService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
@@ -199,16 +203,17 @@ public class PatientFhirResource {
         ResponseEntity<List<Patient>> responseEntity = new ResponseEntity<>
             (page.getContent(), headers, HttpStatus.OK);
 
-        // identical to method above, but query only supports NHS number and patient's name
-        String patients = "[";
-        int i, patientCount;
-        patientCount = responseEntity.getBody().size();
-        if(patientCount == 0){ return "[]"; }
-        for (i = 0; i < patientCount - 1; i++) {
-            patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + ",";
-        }
-        patients = patients + getPatient(responseEntity.getBody().get(i).getId()) + "]";
+        List<Patient> patientList = page.getContent();
+        JsonArray patArray = new JsonArray();
 
-        return patients;
+        for(Patient pat: patientList){
+            String patInfo = getPatient(pat.getId());
+            com.google.gson.JsonParser toJson = new JsonParser();
+            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
+            patArray.add(patJson);
+        }
+        return new ResponseEntity<>(patArray.toString(), headers, HttpStatus.OK);
+
+
     }
 }
