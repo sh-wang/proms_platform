@@ -28,6 +28,8 @@ import com.noesisinformatica.northumbriaproms.domain.Patient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.Map;
+
 /**
  * Service Interface for managing Patient.
  */
@@ -72,5 +74,5 @@ public interface PatientService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    Page<Patient> search(String query, Pageable pageable);
+    Page<Patient> search(Map query, Pageable pageable);
 }

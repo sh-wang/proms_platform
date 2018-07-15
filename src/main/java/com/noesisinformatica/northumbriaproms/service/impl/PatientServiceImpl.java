@@ -26,6 +26,7 @@ package com.noesisinformatica.northumbriaproms.service.impl;
 
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.repository.PatientRepository;
+import com.noesisinformatica.northumbriaproms.repository.search.AddressSearchRepository;
 import com.noesisinformatica.northumbriaproms.repository.search.PatientSearchRepository;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -37,6 +38,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 /**
  * Service Implementation for managing Patient.
@@ -51,9 +54,12 @@ public class PatientServiceImpl implements PatientService{
 
     private final PatientSearchRepository patientSearchRepository;
 
-    public PatientServiceImpl(PatientRepository patientRepository, PatientSearchRepository patientSearchRepository) {
+    private final AddressSearchRepository addressSearchRepository;
+
+    public PatientServiceImpl(PatientRepository patientRepository, PatientSearchRepository patientSearchRepository, AddressSearchRepository addressSearchRepository) {
         this.patientRepository = patientRepository;
         this.patientSearchRepository = patientSearchRepository;
+        this.addressSearchRepository = addressSearchRepository;
     }
 
     /**
@@ -117,18 +123,31 @@ public class PatientServiceImpl implements PatientService{
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<Patient> search(String query, Pageable pageable) {
+    public Page<Patient> search(Map query, Pageable pageable) {
         log.debug("Request to search for a page of Patients for query {}", query);
         QueryBuilder queryBuilder = null;
-        // try to see if query is number, if it is try as nhs number otherwise try as name
-        try {
-            Long number = Long.parseLong(query);
-            queryBuilder = QueryBuilders.termQuery("nhsNumber", number);
-        } catch (NumberFormatException e) {
-            queryBuilder =
-                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
+
+        if (query.get("address-postalcode")!= null){
+            queryBuilder = QueryBuilders.termQuery("postalCode", query.get("address-postalcode"));
+            System.out.println(1231242314);
         }
+        else if (query.get("family")!=null){
+            queryBuilder = QueryBuilders.termQuery("familyName", query.get("family"));
+            System.out.println(query.get("family"));
+        }
+
         Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
+
+
+        // try to see if query is number, if it is try as nhs number otherwise try as name
+//        try {
+//            Long number = Long.parseLong(query);
+//            queryBuilder = QueryBuilders.termQuery("nhsNumber", number);
+//        } catch (NumberFormatException e) {
+//            queryBuilder =
+//                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
+//        }
+//        Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
         return result;
     }
 }
