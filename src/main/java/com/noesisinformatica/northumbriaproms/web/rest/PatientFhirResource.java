@@ -174,16 +174,7 @@ public class PatientFhirResource {
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/Patient/all");
         if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<Patient> patientList = new ArrayList<>();
-        int pageNumber = page.getTotalPages();
-        while(pageNumber > 0){
-            patientList.addAll(page.getContent());
-            page = patientService.findAll(page.nextPageable());
-            pageNumber--;
-        }
-
-        JsonArray patientArray = new JsonArray();
-        patientArray = JsonConversion(patientList, patientArray);
+        JsonArray patientArray = JsonConversion(page);
 
         return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
     }
@@ -192,14 +183,22 @@ public class PatientFhirResource {
     /**
      * Convert a list of FHIR patient information into a Json array
      *
-     * @param actionList a list of patients
-     * @param patientArray a blank Json array
      * @return the Json array contains all patients information
      */
-    private JsonArray JsonConversion(List<Patient> actionList, JsonArray patientArray){
+    private JsonArray JsonConversion(Page page){
+        List<Patient> patientList = new ArrayList<>();
         String questionnaireResponseString;
         JsonObject patientJson;
-        for(Patient patient: actionList) {
+        JsonArray patientArray = new JsonArray();
+        int pageNumber = page.getTotalPages();
+
+        while(pageNumber > 0){
+            patientList.addAll(page.getContent());
+            page = patientService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
+        for(Patient patient: patientList) {
             questionnaireResponseString = getPatient(patient.getId());
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             patientJson = toJson.parse(questionnaireResponseString).getAsJsonObject();

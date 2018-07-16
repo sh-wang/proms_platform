@@ -86,8 +86,6 @@ public class QuestionnaireResponseFhirResource {
         this.questionnaireFhirResource = questionnaireFhirResource;
     }
 
-//    private final String defaultPath = "localhost:8080/api/fhir/";
-
 
     /**
      * GET  /followup-action/{id}.
@@ -254,11 +252,10 @@ public class QuestionnaireResponseFhirResource {
         FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(),
             page, "/api/fhir/Questionnaire-response");
-        // wrap results page in a response entity with faceted results turned into a map
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<FollowupAction> actionList = page.getContent();
-        JsonArray QuesResArray = new JsonArray();
-        QuesResArray = JsonConversion(actionList, QuesResArray);
+        // wrap results page in a response entity with faceted results turned into a map
+        JsonArray QuesResArray = JsonConversion(page);
 
         return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
 
@@ -282,16 +279,7 @@ public class QuestionnaireResponseFhirResource {
             "/api/fhir/Questionnaire-response/all");
         if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<FollowupAction> quesResList = new ArrayList<>();
-        int pageNumber = page.getTotalPages();
-        while(pageNumber > 0){
-            quesResList.addAll(page.getContent());
-            page = followupActionService.findAll(page.nextPageable());
-            pageNumber--;
-        }
-
-        JsonArray quesResArray = new JsonArray();
-        quesResArray = JsonConversion(quesResList, quesResArray);
+        JsonArray quesResArray = JsonConversion(page);
 
         return new ResponseEntity<>(quesResArray.toString(), headers, HttpStatus.OK);
     }
@@ -300,14 +288,24 @@ public class QuestionnaireResponseFhirResource {
     /**
      * Convert a list of FHIR follow up actions into a Json array
      *
-     * @param actionList a list of follow up actions
-     * @param quesResArray a blank Json array
+     * @param page the page store all questionnaire response
      * @return the Json array contains all follow up actions
      */
-    private JsonArray JsonConversion(List<FollowupAction> actionList, JsonArray quesResArray){
+    private JsonArray JsonConversion(Page page){
+        List<FollowupAction> quesResList = new ArrayList<>();
+        JsonArray quesResArray = new JsonArray();
         String questionnaireResponseString;
         JsonObject quesResJson;
-        for(FollowupAction followupAction: actionList) {
+        int pageNumber = page.getTotalPages();
+
+        //get all questionnaire response
+        while(pageNumber > 0){
+            quesResList.addAll(page.getContent());
+            page = followupActionService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
+        for(FollowupAction followupAction: quesResList) {
             questionnaireResponseString = getByFollowupActionId(followupAction.getId());
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
