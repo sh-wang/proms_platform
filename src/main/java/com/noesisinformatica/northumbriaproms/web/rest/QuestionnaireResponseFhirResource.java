@@ -41,8 +41,11 @@ import org.hl7.fhir.dstu3.model.Procedure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.FacetedPage;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -159,11 +162,25 @@ public class QuestionnaireResponseFhirResource {
         return questionnaireResponse;
     }
 
+//    /**
+//     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
+//     * to the query.
+//     * @param pageable the pagination information
+//     * @return the result of the search
+//     */
+//    @GetMapping("/Questionnaire-response")
+//    @Timed
+//    public ResponseEntity<String> searchQuestionnaireResponse(String procedures, String consultants,
+//                                                              String locations, String patientIds,
+//                                                              String phases, String types,
+//                                                              String genders, String sides,
+//                                                              String careEvents,
+//                                                              Integer minAge, Integer maxAge,
+//                                                              String token, Pageable pageable) {
+
     /**
      * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
      * to the query.
-     *
-     * @param pageable the pagination information
      * @return the result of the search
      */
     @GetMapping("/Questionnaire-response")
@@ -174,44 +191,58 @@ public class QuestionnaireResponseFhirResource {
                                                               String genders, String sides,
                                                               String careEvents,
                                                               Integer minAge, Integer maxAge,
-                                                              String token, Pageable pageable) {
+                                                              String token) {
 
+        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
+            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
 
+        }
+
+        Sort sort = new Sort(Sort.Direction.ASC, "id");
+        Pageable pageable = new PageRequest(0, 20, sort);
         QueryModel query = new QueryModel();
+        List<String> emptyValue = new ArrayList();
         if(procedures!=null){
             query.setProcedures(Collections.singletonList(procedures));
         }else{
-            query.setProcedures(Collections.singletonList(""));
+//            query.setProcedures(Collections.singletonList(""));
+            query.setProcedures(emptyValue);
         }
         if(consultants!=null){
             query.setConsultants(Collections.singletonList(consultants));
         }else {
-            query.setConsultants(Collections.singletonList(""));
+//            query.setConsultants(Collections.singletonList(""));
+            query.setConsultants(emptyValue);
         }
         if(locations!=null){
             query.setLocations(Collections.singletonList(locations));
         }else{
-            query.setLocations(Collections.singletonList(""));
+//            query.setLocations(Collections.singletonList(""));
+            query.setLocations(emptyValue);
         }
         if(careEvents!=null){
             query.setCareEvents(Collections.singletonList(careEvents));
         }else{
-            query.setCareEvents(Collections.singletonList(""));
+//            query.setCareEvents(Collections.singletonList(""));
+            query.setCareEvents(emptyValue);
         }
         if(patientIds!=null){
             query.setPatientIds(Collections.singletonList(patientIds));
         }else{
-            query.setPatientIds(Collections.singletonList(""));
+//            query.setPatientIds(Collections.singletonList(""));
+            query.setPatientIds(emptyValue);
         }
         if(genders!=null){
             query.setGenders(Collections.singletonList(genders));
         }else{
-            query.setGenders(Collections.singletonList(""));
+//            query.setGenders(Collections.singletonList(""));
+            query.setGenders(emptyValue);
         }
         if(phases!=null){
             query.setPhases(Collections.singletonList(phases));
         }else{
-            query.setPhases(Collections.singletonList(""));
+//            query.setPhases(Collections.singletonList(""));
+            query.setPhases(emptyValue);
         }
         if(maxAge!=null){
             query.setMaxAge(maxAge);
@@ -226,22 +257,23 @@ public class QuestionnaireResponseFhirResource {
         if(types!=null){
             query.setTypes(Collections.singletonList(types));
         }else{
-            query.setTypes(Collections.singletonList(""));
+//            query.setTypes(Collections.singletonList(""));
+            query.setTypes(emptyValue);
         }
         if(sides!=null){
             query.setSides(Collections.singletonList(sides));
         }else{
-            query.setSides(Collections.singletonList(""));
+//            query.setSides(Collections.singletonList(""));
+            query.setSides(emptyValue);
         }
         query.setStatuses(Collections.singletonList("STARTED"));
         if(token!=null){
             query.setToken(token);
         }else{
+//            query.setToken("");
             query.setToken("");
         }
 
-
-        System.out.println(query);
 
         log.debug("REST request to search for a page of FollowupActions for query {}", query);
         FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
@@ -254,6 +286,7 @@ public class QuestionnaireResponseFhirResource {
         QuesResArray = JsonConversion(actionList, QuesResArray);
 
         return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
+//        return "ok";
 
     }
 
