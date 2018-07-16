@@ -159,9 +159,12 @@ public class PatientFhirResource {
     }
 
 
+
     /**
      * GET  /patients : get all the patients in FHIR format.
      *
+     * @param criteria the criterias which the requested entities should match
+     * @param pageable the pagination information
      * @return a string with all patients information in FHIR format
      */
     @GetMapping("/Patient/all")
@@ -190,16 +193,15 @@ public class PatientFhirResource {
      */
     private JsonArray JsonConversion(List<Patient> actionList, JsonArray patientArray){
         String questionnaireResponseString;
-        JsonObject quesResJson;
+        JsonObject patientJson;
         for(Patient patient: actionList) {
             questionnaireResponseString = getPatient(patient.getId());
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
-            quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
-            patientArray.add(quesResJson);
+            patientJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+            patientArray.add(patientJson);
         }
         return patientArray;
     }
-
 
 
     /**
@@ -222,7 +224,7 @@ public class PatientFhirResource {
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
         Page<Patient> page = patientService.search(query, pageable);
 //        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
-//            (query, page, "/api/fhir/_search/patients");
+//            (query, page, "/api/fhir/Patient");
 
         List<Patient> patientList = page.getContent();
         JsonArray patArray = new JsonArray();
@@ -246,7 +248,7 @@ public class PatientFhirResource {
 //        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
 //        Page<Patient> page = patientService.search(query, pageable);
 //        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
-//            (query, page, "/api/fhir/_search/patients");
+//            (query, page, "/api/fhir/Patient");
 //
 //        List<Patient> patientList = page.getContent();
 //        JsonArray patArray = new JsonArray();

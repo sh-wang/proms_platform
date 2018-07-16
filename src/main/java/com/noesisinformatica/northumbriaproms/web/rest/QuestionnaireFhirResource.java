@@ -27,6 +27,8 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
 import com.noesisinformatica.northumbriaproms.service.QuestionnaireService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
@@ -35,11 +37,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 
 
 /**
@@ -109,19 +115,36 @@ public class QuestionnaireFhirResource {
      */
     @GetMapping("/Questionnaire/all")
     @Timed
-    public String getAllQuestionnaires(Pageable pageable) {
+    public ResponseEntity<String> getAllQuestionnaires(Pageable pageable) {
         log.debug("REST request to get a page of Questionnaires in FHIR");
         Page<Questionnaire> page = questionnaireService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders
+            (page, "/api/fhir/Questionnaire/all");
 
-        String questionnaires = "[";
-        long i, questionCount;
-        questionCount = page.getTotalElements();
-        if (questionCount == 0){ return "[]";}
-        for (i = 1; i < questionCount; i++){
-            questionnaires = questionnaires + getQuestionnaire(i) + ",";
+        List<Questionnaire> questionnaireList = page.getContent();
+        JsonArray questionnaireArray = new JsonArray();
+        questionnaireArray = JsonConversion(questionnaireList, questionnaireArray);
+
+        return new ResponseEntity<>(questionnaireArray.toString(), headers, HttpStatus.OK);
+    }
+
+
+    /**
+     * Convert a list of FHIR patient information into a Json array
+     *
+     * @param actionList a list of questionnaires
+     * @param questionnaireArray a blank Json array
+     * @return the Json array contains all questionnaire information
+     */
+    private JsonArray JsonConversion(List<Questionnaire> actionList, JsonArray questionnaireArray){
+        String questionnaireResponseString;
+        JsonObject questionnaireJson;
+        for(Questionnaire patient: actionList) {
+            questionnaireResponseString = getQuestionnaire(patient.getId());
+            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
+            questionnaireJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+            questionnaireArray.add(questionnaireJson);
         }
-
-        questionnaires = questionnaires + getQuestionnaire(i) + "]";
-        return questionnaires;
+        return questionnaireArray;
     }
 }

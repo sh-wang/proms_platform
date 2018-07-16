@@ -263,6 +263,7 @@ public class QuestionnaireResponseFhirResource {
      * GET  /questionnaire-response : get all the questionnaires
      * responses by follow up id.
      *
+     * @param criteria the criterias which the requested entities should match
      * @param pageable the pagination information
      * @return all questionnaires response in FHIR
      */

@@ -27,18 +27,26 @@ package com.noesisinformatica.northumbriaproms.web.rest;
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.parser.IParser;
 import com.codahale.metrics.annotation.Timed;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.noesisinformatica.northumbriaproms.domain.Procedure;
 import com.noesisinformatica.northumbriaproms.service.ProcedureService;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * REST controller for Resource QuestionnaireResponse.
@@ -110,19 +118,36 @@ public class ProcedureFhirResource {
      */
     @GetMapping("/Procedure/all")
     @Timed
-    public String getAllProcedures(Pageable pageable) {
+    public ResponseEntity<String> getAllProcedures(Pageable pageable) {
         log.debug("REST request to get a page of Procedures in FHIR");
         Page<Procedure> page = procedureService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders
+            (page, "/api/fhir/Procedure/all");
 
-        String procedures = "[";
-        long i, procedureCount;
-        procedureCount = page.getTotalElements();
-        if(procedureCount == 0){ return "[]"; }
-        for (i = 1; i < procedureCount; i++) {
-            procedures = procedures + getProcedure(i) + ",";
+        List<Procedure> procedureList = page.getContent();
+        JsonArray procedureArray = new JsonArray();
+        procedureArray = JsonConversion(procedureList, procedureArray);
+
+        return new ResponseEntity<>(procedureArray.toString(), headers, HttpStatus.OK);
+    }
+
+
+    /**
+     * Convert a list of FHIR patient information into a Json array
+     *
+     * @param actionList a list of procedure
+     * @param procedureArray a blank Json array
+     * @return the Json array contains all procedures information
+     */
+    private JsonArray JsonConversion(List<Procedure> actionList, JsonArray procedureArray){
+        String questionnaireResponseString;
+        JsonObject procedureJson;
+        for(Procedure patient: actionList) {
+            questionnaireResponseString = getProcedure(patient.getId());
+            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
+            procedureJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+            procedureArray.add(procedureJson);
         }
-
-        procedures = procedures + getProcedure(i) + "]";
-        return procedures;
+        return procedureArray;
     }
 }
