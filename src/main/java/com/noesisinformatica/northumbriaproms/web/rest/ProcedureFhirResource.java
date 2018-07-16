@@ -46,6 +46,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -123,8 +124,16 @@ public class ProcedureFhirResource {
         Page<Procedure> page = procedureService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders
             (page, "/api/fhir/Procedure/all");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<Procedure> procedureList = page.getContent();
+        List<Procedure> procedureList = new ArrayList<>();
+        int pageNumber = page.getTotalPages();
+        while(pageNumber > 0){
+            procedureList.addAll(page.getContent());
+            page = procedureService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
         JsonArray procedureArray = new JsonArray();
         procedureArray = JsonConversion(procedureList, procedureArray);
 

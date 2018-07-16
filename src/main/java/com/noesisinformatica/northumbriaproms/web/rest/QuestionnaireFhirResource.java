@@ -45,6 +45,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -120,8 +121,16 @@ public class QuestionnaireFhirResource {
         Page<Questionnaire> page = questionnaireService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders
             (page, "/api/fhir/Questionnaire/all");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<Questionnaire> questionnaireList = page.getContent();
+        List<Questionnaire> questionnaireList = new ArrayList<>();
+        int pageNumber = page.getTotalPages();
+        while(pageNumber > 0){
+            questionnaireList.addAll(page.getContent());
+            page = questionnaireService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
         JsonArray questionnaireArray = new JsonArray();
         questionnaireArray = JsonConversion(questionnaireList, questionnaireArray);
 

@@ -44,7 +44,9 @@ import org.hl7.fhir.dstu3.model.Enumerations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,12 +68,10 @@ public class PatientFhirResource {
 
     private final PatientService patientService;
     private final AddressService addressService;
-    private final PatientQueryService patientQueryService;
-    public PatientFhirResource(PatientService patientService, AddressService addressService,
-                               PatientQueryService patientQueryService) {
+    public PatientFhirResource(PatientService patientService,
+                               AddressService addressService) {
         this.patientService = patientService;
         this.addressService = addressService;
-        this.patientQueryService = patientQueryService;
     }
 
 
@@ -163,20 +163,25 @@ public class PatientFhirResource {
     /**
      * GET  /patients : get all the patients in FHIR format.
      *
-     * @param criteria the criterias which the requested entities should match
      * @param pageable the pagination information
      * @return a string with all patients information in FHIR format
      */
     @GetMapping("/Patient/all")
     @Timed
-    public ResponseEntity<String> getAllPatient(PatientCriteria criteria, Pageable pageable) {
+    public ResponseEntity<String> getAllPatient(Pageable pageable) {
         log.debug("REST request to get Patients in FHIR format by criteria: {}");
-        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page,
-            "/api/fhir/Patient/all");
+        Page<Patient> page = patientService.findAll(pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/Patient/all");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        // here we create a long String containing all patients' info in fhir standard, json format
-        List<Patient> patientList = page.getContent();
+        List<Patient> patientList = new ArrayList<>();
+        int pageNumber = page.getTotalPages();
+        while(pageNumber > 0){
+            patientList.addAll(page.getContent());
+            page = patientService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
         JsonArray patientArray = new JsonArray();
         patientArray = JsonConversion(patientList, patientArray);
 
@@ -204,16 +209,16 @@ public class PatientFhirResource {
     }
 
 
-//    /**
-//     * SEARCH  /Patient?query=:query : search for the patient corresponding
-//     * to the query.
-//     * example: /Patient?query=1000000000 : search for patient with nhs number
-//     * 1000000000
-//     * query can be name or nhsNumber
-//     *
-//     * @param pageable the pagination information
-//     * @return the result of the search in FHIR
-//     */
+    /**
+     * SEARCH  /Patient?query=:query : search for the patient corresponding
+     * to the query.
+     * example: /Patient?query=1000000000 : search for patient with nhs number
+     * 1000000000
+     * query can be name or nhsNumber
+     *
+     * @param pageable the pagination information
+     * @return the result of the search in FHIR
+     */
     @GetMapping("/Patient")
     @Timed
     public ResponseEntity<String> searchPatients(String postcode, String family, Pageable pageable) {

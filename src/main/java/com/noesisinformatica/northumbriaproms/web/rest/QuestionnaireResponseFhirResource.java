@@ -296,21 +296,28 @@ public class QuestionnaireResponseFhirResource {
      * GET  /questionnaire-response : get all the questionnaires
      * responses by follow up id.
      *
-     * @param criteria the criterias which the requested entities should match
      * @param pageable the pagination information
      * @return all questionnaires response in FHIR
      */
     @GetMapping("/Questionnaire-response/all")
     @Timed
-    public ResponseEntity<String> getAllQuestionnaireResponse(FollowupActionCriteria criteria,Pageable pageable){
+    public ResponseEntity<String> getAllQuestionnaireResponse(Pageable pageable){
         log.debug("REST request to get all questionnaire response in FHIR");
-        Page<FollowupAction> page = followupActionQueryScervice.findByCriteria(criteria, pageable);
+        Page<FollowupAction> page = followupActionService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page,
             "/api/fhir/Questionnaire-response/all");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
-        List<FollowupAction> actionList = page.getContent();
+        List<FollowupAction> quesResList = new ArrayList<>();
+        int pageNumber = page.getTotalPages();
+        while(pageNumber > 0){
+            quesResList.addAll(page.getContent());
+            page = followupActionService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
         JsonArray quesResArray = new JsonArray();
-        quesResArray = JsonConversion(actionList, quesResArray);
+        quesResArray = JsonConversion(quesResList, quesResArray);
 
         return new ResponseEntity<>(quesResArray.toString(), headers, HttpStatus.OK);
     }
