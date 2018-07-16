@@ -162,21 +162,6 @@ public class QuestionnaireResponseFhirResource {
         return questionnaireResponse;
     }
 
-//    /**
-//     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
-//     * to the query.
-//     * @param pageable the pagination information
-//     * @return the result of the search
-//     */
-//    @GetMapping("/Questionnaire-response")
-//    @Timed
-//    public ResponseEntity<String> searchQuestionnaireResponse(String procedures, String consultants,
-//                                                              String locations, String patientIds,
-//                                                              String phases, String types,
-//                                                              String genders, String sides,
-//                                                              String careEvents,
-//                                                              Integer minAge, Integer maxAge,
-//                                                              String token, Pageable pageable) {
 
     /**
      * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
@@ -205,43 +190,36 @@ public class QuestionnaireResponseFhirResource {
         if(procedures!=null){
             query.setProcedures(Collections.singletonList(procedures));
         }else{
-//            query.setProcedures(Collections.singletonList(""));
             query.setProcedures(emptyValue);
         }
         if(consultants!=null){
             query.setConsultants(Collections.singletonList(consultants));
         }else {
-//            query.setConsultants(Collections.singletonList(""));
             query.setConsultants(emptyValue);
         }
         if(locations!=null){
             query.setLocations(Collections.singletonList(locations));
         }else{
-//            query.setLocations(Collections.singletonList(""));
             query.setLocations(emptyValue);
         }
         if(careEvents!=null){
             query.setCareEvents(Collections.singletonList(careEvents));
         }else{
-//            query.setCareEvents(Collections.singletonList(""));
             query.setCareEvents(emptyValue);
         }
         if(patientIds!=null){
             query.setPatientIds(Collections.singletonList(patientIds));
         }else{
-//            query.setPatientIds(Collections.singletonList(""));
             query.setPatientIds(emptyValue);
         }
         if(genders!=null){
             query.setGenders(Collections.singletonList(genders));
         }else{
-//            query.setGenders(Collections.singletonList(""));
             query.setGenders(emptyValue);
         }
         if(phases!=null){
             query.setPhases(Collections.singletonList(phases));
         }else{
-//            query.setPhases(Collections.singletonList(""));
             query.setPhases(emptyValue);
         }
         if(maxAge!=null){
@@ -257,20 +235,17 @@ public class QuestionnaireResponseFhirResource {
         if(types!=null){
             query.setTypes(Collections.singletonList(types));
         }else{
-//            query.setTypes(Collections.singletonList(""));
             query.setTypes(emptyValue);
         }
         if(sides!=null){
             query.setSides(Collections.singletonList(sides));
         }else{
-//            query.setSides(Collections.singletonList(""));
             query.setSides(emptyValue);
         }
         query.setStatuses(Collections.singletonList("STARTED"));
         if(token!=null){
             query.setToken(token);
         }else{
-//            query.setToken("");
             query.setToken("");
         }
 
@@ -286,7 +261,6 @@ public class QuestionnaireResponseFhirResource {
         QuesResArray = JsonConversion(actionList, QuesResArray);
 
         return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
-//        return "ok";
 
     }
 
