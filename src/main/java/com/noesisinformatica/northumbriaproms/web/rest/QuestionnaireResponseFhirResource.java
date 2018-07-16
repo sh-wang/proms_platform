@@ -109,7 +109,7 @@ public class QuestionnaireResponseFhirResource {
     }
 
 
-    public QuestionnaireResponse getQuestionnaireResponseResource(Long id){
+    private QuestionnaireResponse getQuestionnaireResponseResource(Long id){
         FollowupAction followupAction = followupActionService.findOne(id);
         if (followupAction == null){return null;}
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse=
@@ -120,20 +120,17 @@ public class QuestionnaireResponseFhirResource {
         org.hl7.fhir.dstu3.model.Patient patientFHIR = patientFhirResource.getPatientResource(
             followupAction.getPatient().getId());
         org.hl7.fhir.dstu3.model.Reference refePa = new org.hl7.fhir.dstu3.model.Reference(patientFHIR);
-//        questionnaireResponse.setSource(refePa);
         questionnaireResponse.setSubject(refePa);
 
         Procedure procedureFHIR = procedureFhirResource.getProcedureResource(followupAction.getCareEvent()
             .getFollowupPlan().getProcedureBooking().getId());
         org.hl7.fhir.dstu3.model.Reference refePr = new org.hl7.fhir.dstu3.model.Reference(procedureFHIR);
-//        r4.setReference(procedureFHIR);
         questionnaireResponse.addParent(refePr);
 
         // add patient's questionnaire need to accomplish, in the format of fhir standard, json format.
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFHIR = questionnaireFhirResource
             .getQuestionnaireResource(followupAction.getQuestionnaire().getId());
         org.hl7.fhir.dstu3.model.Reference refeQu = new org.hl7.fhir.dstu3.model.Reference(questionnaireFHIR);
-//        r3.setReference(questionnairejson);
         questionnaireResponse.setQuestionnaire(refeQu);
 
         // display each question and its corresponding answer for the questionnaire.
@@ -253,28 +250,22 @@ public class QuestionnaireResponseFhirResource {
         // wrap results page in a response entity with faceted results turned into a map
 
         List<FollowupAction> actionList = page.getContent();
-        JsonArray QuesResarray = new JsonArray();
+        JsonArray QuesResArray = new JsonArray();
+        QuesResArray = JsonConversion(actionList, QuesResArray);
 
-        for(FollowupAction followupAction: actionList) {
-            String questionnaireResponseString = getByFollowupActionId(followupAction.getId());
-            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
-            JsonObject quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
-            QuesResarray.add(quesResJson);
-        }
-
-        return new ResponseEntity<>(QuesResarray.toString(), headers, HttpStatus.OK);
+        return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
 
     }
 
 
 
-        /**
-         * GET  /questionnaire-response : get all the questionnaires
-         * responses by follow up id.
-         *
-         * @param pageable the pagination information
-         * @return all questionnaires response in FHIR
-         */
+    /**
+     * GET  /questionnaire-response : get all the questionnaires
+     * responses by follow up id.
+     *
+     * @param pageable the pagination information
+     * @return all questionnaires response in FHIR
+     */
     @GetMapping("/Questionnaire-response/all")
     @Timed
     public ResponseEntity<String> getAllQuestionnaireResponse(FollowupActionCriteria criteria,Pageable pageable){
@@ -284,16 +275,30 @@ public class QuestionnaireResponseFhirResource {
             "/api/fhir/Questionnaire-response/all");
 
         List<FollowupAction> actionList = page.getContent();
-        JsonArray QuesResarray = new JsonArray();
+        JsonArray quesResArray = new JsonArray();
+        quesResArray = JsonConversion(actionList, quesResArray);
 
+        return new ResponseEntity<>(quesResArray.toString(), headers, HttpStatus.OK);
+    }
+
+
+    /**
+     * Convert a list of FHIR follow up actions into a Json array
+     *
+     * @param actionList a list of follow up actions
+     * @param quesResArray a blank Json array
+     * @return the Json array contains all follow up actions
+     */
+    private JsonArray JsonConversion(List<FollowupAction> actionList, JsonArray quesResArray){
+        String questionnaireResponseString;
+        JsonObject quesResJson;
         for(FollowupAction followupAction: actionList) {
-            String questionnaireResponseString = getByFollowupActionId(followupAction.getId());
+            questionnaireResponseString = getByFollowupActionId(followupAction.getId());
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
-            JsonObject quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
-            QuesResarray.add(quesResJson);
+            quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+            quesResArray.add(quesResJson);
         }
-
-        return new ResponseEntity<>(QuesResarray.toString(), headers, HttpStatus.OK);
+        return quesResArray;
     }
 }
 

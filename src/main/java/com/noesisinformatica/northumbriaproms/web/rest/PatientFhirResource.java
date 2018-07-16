@@ -37,6 +37,7 @@ import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.AddressService;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
+import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
@@ -65,9 +66,12 @@ public class PatientFhirResource {
 
     private final PatientService patientService;
     private final AddressService addressService;
-    public PatientFhirResource(PatientService patientService, AddressService addressService) {
+    private final PatientQueryService patientQueryService;
+    public PatientFhirResource(PatientService patientService, AddressService addressService,
+                               PatientQueryService patientQueryService) {
         this.patientService = patientService;
         this.addressService = addressService;
+        this.patientQueryService = patientQueryService;
     }
 
 
@@ -162,22 +166,40 @@ public class PatientFhirResource {
      */
     @GetMapping("/Patient/all")
     @Timed
-    public String getAllPatient(Pageable pageable) {
+    public ResponseEntity<String> getAllPatient(PatientCriteria criteria, Pageable pageable) {
         log.debug("REST request to get Patients in FHIR format by criteria: {}");
-        Page<Patient> page = patientService.findAll(pageable);
+        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page,
+            "/api/fhir/Patient/all");
 
         // here we create a long String containing all patients' info in fhir standard, json format
-        String patients = "[";
-        long i, patientCount;
-        patientCount = page.getTotalElements();
-        if(patientCount == 0){ return "[]"; }
-        for (i = 1; i < patientCount; i++) {
-            patients = patients + getPatient(i) + ",";
-        }
-        patients = patients + getPatient(i) + "]";
+        List<Patient> patientList = page.getContent();
+        JsonArray patientArray = new JsonArray();
+        patientArray = JsonConversion(patientList, patientArray);
 
-        return patients;
+        return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
     }
+
+
+    /**
+     * Convert a list of FHIR patient information into a Json array
+     *
+     * @param actionList a list of patients
+     * @param patientArray a blank Json array
+     * @return the Json array contains all patients information
+     */
+    private JsonArray JsonConversion(List<Patient> actionList, JsonArray patientArray){
+        String questionnaireResponseString;
+        JsonObject quesResJson;
+        for(Patient patient: actionList) {
+            questionnaireResponseString = getPatient(patient.getId());
+            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
+            quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+            patientArray.add(quesResJson);
+        }
+        return patientArray;
+    }
+
 
 
     /**
