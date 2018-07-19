@@ -166,13 +166,13 @@ public class PatientResource {
      * @param pageable the pagination information
      * @return the result of the search
      */
-//    @GetMapping("/_search/patients")
-//    @Timed
-//    public ResponseEntity<List<Patient>> searchPatients(@RequestParam String query, Pageable pageable) {
-//        log.debug("REST request to search for a page of Patients for query {}", query);
-//        Page<Patient> page = patientService.search(query, pageable);
-//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/patients");
-//        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-//    }
+    @GetMapping("/_search/patients")
+    @Timed
+    public ResponseEntity<List<Patient>> searchPatients(@RequestParam String query, Pageable pageable) {
+        log.debug("REST request to search for a page of Patients for query {}", query);
+        Page<Patient> page = patientService.search(query, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/patients");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
 
 }

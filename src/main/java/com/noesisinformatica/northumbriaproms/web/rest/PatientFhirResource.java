@@ -207,40 +207,40 @@ public class PatientFhirResource {
     }
 
 
-    /**
-     * SEARCH  /Patient?query=:query : search for the patient corresponding
-     * to the query.
-     * example: /Patient?query=1000000000 : search for patient with nhs number
-     * 1000000000
-     * query can be name or nhsNumber
-     *
-     * @param pageable the pagination information
-     * @return the result of the search in FHIR
-     */
-    @GetMapping("/Patient")
-    @Timed
-    public ResponseEntity<String> searchPatients(String postcode, String family, Pageable pageable) {
-        Map query = new HashMap();
-        query.put("address-postalcode", postcode);
-        query.put("family", family);
-        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
-        Page<Patient> page = patientService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
-            (query.get("family").toString(), page, "/api/fhir/Patient");
-
-        List<Patient> patientList = page.getContent();
-        JsonArray patArray = new JsonArray();
-
-        for(Patient pat: patientList){
-            String patInfo = getPatient(pat.getId()).getBody();
-            com.google.gson.JsonParser toJson = new JsonParser();
-            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
-            patArray.add(patJson);
-        }
-        return new ResponseEntity<>(patArray.toString(),headers, HttpStatus.OK);
-
-
-    }
+//    /**
+//     * SEARCH  /Patient?query=:query : search for the patient corresponding
+//     * to the query.
+//     * example: /Patient?query=1000000000 : search for patient with nhs number
+//     * 1000000000
+//     * query can be name or nhsNumber
+//     *
+//     * @param pageable the pagination information
+//     * @return the result of the search in FHIR
+//     */
+//    @GetMapping("/Patient")
+//    @Timed
+//    public ResponseEntity<String> searchPatients(String postcode, String family, Pageable pageable) {
+//        Map query = new HashMap();
+//        query.put("address-postalcode", postcode);
+//        query.put("family", family);
+//        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
+//        Page<Patient> page = patientService.search(query, pageable);
+//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
+//            (query.get("family").toString(), page, "/api/fhir/Patient");
+//
+//        List<Patient> patientList = page.getContent();
+//        JsonArray patArray = new JsonArray();
+//
+//        for(Patient pat: patientList){
+//            String patInfo = getPatient(pat.getId()).getBody();
+//            com.google.gson.JsonParser toJson = new JsonParser();
+//            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
+//            patArray.add(patJson);
+//        }
+//        return new ResponseEntity<>(patArray.toString(),headers, HttpStatus.OK);
+//
+//
+//    }
 
 
      /**
