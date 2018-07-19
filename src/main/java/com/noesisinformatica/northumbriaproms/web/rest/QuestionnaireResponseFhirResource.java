@@ -31,6 +31,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.*;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
+import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.service.dto.FollowupActionCriteria;
@@ -116,7 +117,23 @@ public class QuestionnaireResponseFhirResource {
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse=
             new org.hl7.fhir.dstu3.model.QuestionnaireResponse();
         questionnaireResponse.setId(id.toString());
-        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+
+//        questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        if (followupAction.getStatus().equals(ActionStatus.STARTED)){
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS);
+        }
+        if (followupAction.getStatus().equals(ActionStatus.UNINITIALISED)){
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.NULL);
+        }
+        if (followupAction.getStatus().equals(ActionStatus.COMPLETED)){
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
+        }
+        if (followupAction.getStatus().equals(ActionStatus.UNKNOWN)){
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.NULL);
+        }
+        if (followupAction.getStatus().equals(ActionStatus.PENDING)){
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS);
+        }
 
         org.hl7.fhir.dstu3.model.Patient patientFHIR = patientFhirResource.getPatientResource(
             followupAction.getPatient().getId());
@@ -174,15 +191,15 @@ public class QuestionnaireResponseFhirResource {
                                                               String genders, String sides,
                                                               String careEvents,
                                                               Integer minAge, Integer maxAge,
-                                                              String token) {
+                                                              String token, String statuses,
+                                                              @PageableDefault(sort = {"id"},
+                                                                  direction = Sort.Direction.DESC) Pageable pageable) {
 
-        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
-            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
+//        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
+//            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
+//
+//        }
 
-        }
-
-        Sort sort = new Sort(Sort.Direction.ASC, "id");
-        Pageable pageable = new PageRequest(0, 20, sort);
         QueryModel query = new QueryModel();
         List<String> emptyValue = new ArrayList();
         if(procedures!=null){
@@ -240,13 +257,18 @@ public class QuestionnaireResponseFhirResource {
         }else{
             query.setSides(emptyValue);
         }
-        query.setStatuses(Collections.singletonList("STARTED"));
+
+        if (statuses != null){
+            query.setStatuses(Collections.singletonList(statuses));
+        }else {
+            query.setStatuses(emptyValue);
+        }
+
         if(token!=null){
             query.setToken(token);
         }else{
             query.setToken("");
         }
-
 
         log.debug("REST request to search for a page of FollowupActions for query {}", query);
         FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
