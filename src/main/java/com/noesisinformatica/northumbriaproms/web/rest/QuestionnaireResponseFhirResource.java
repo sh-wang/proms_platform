@@ -96,18 +96,18 @@ public class QuestionnaireResponseFhirResource {
      */
     @GetMapping("/Questionnaire-response/{id}")
     @Timed
-    public String getByFollowupActionId(@PathVariable Long id){
+    public ResponseEntity<String> getByFollowupActionId(@PathVariable Long id){
         log.debug("REST request to get questionnaire response in FHIR by followup-action ID", id);
 
         FollowupAction followupAction = followupActionService.findOne(id);
-        if (followupAction == null){return "[]";}
+        if (followupAction == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse = getQuestionnaireResponseResource(id);
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireResponse);
-        return encode;
+        return new ResponseEntity<>(encode, HttpStatus.OK);
     }
 
 
@@ -328,7 +328,7 @@ public class QuestionnaireResponseFhirResource {
         }
 
         for(FollowupAction followupAction: quesResList) {
-            questionnaireResponseString = getByFollowupActionId(followupAction.getId());
+            questionnaireResponseString = getByFollowupActionId(followupAction.getId()).getBody();
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             quesResJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
             quesResArray.add(quesResJson);

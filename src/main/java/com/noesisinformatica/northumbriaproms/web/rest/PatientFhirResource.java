@@ -39,6 +39,7 @@ import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
+import io.github.jhipster.web.util.ResponseUtil;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
 import org.slf4j.Logger;
@@ -83,19 +84,17 @@ public class PatientFhirResource {
      */
     @GetMapping("/Patient/{id}")
     @Timed
-    public String getPatient(@PathVariable Long id) {
+    public ResponseEntity<String> getPatient(@PathVariable Long id) {
         log.debug("REST request to get Patient in FHIR format: {}", id);
 
         org.hl7.fhir.dstu3.model.Patient patientFhir = getPatientResource(id);
-        if (patientFhir == null){ return "[]"; }
+        if (patientFhir == null){ return new ResponseEntity<>("[]", HttpStatus.OK); }
 
         //FHIR conversion
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
-        ctx.newJsonParser();
-        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(patientFhir);
-        return encode;
+        return new ResponseEntity<>(encode, HttpStatus.OK);
     }
 
 
@@ -199,7 +198,7 @@ public class PatientFhirResource {
         }
 
         for(Patient patient: patientList) {
-            questionnaireResponseString = getPatient(patient.getId());
+            questionnaireResponseString = getPatient(patient.getId()).getBody();
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             patientJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
             patientArray.add(patientJson);
@@ -233,7 +232,7 @@ public class PatientFhirResource {
         JsonArray patArray = new JsonArray();
 
         for(Patient pat: patientList){
-            String patInfo = getPatient(pat.getId());
+            String patInfo = getPatient(pat.getId()).getBody();
             com.google.gson.JsonParser toJson = new JsonParser();
             JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
             patArray.add(patJson);

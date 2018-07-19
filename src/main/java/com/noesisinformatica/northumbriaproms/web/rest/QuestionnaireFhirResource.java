@@ -73,17 +73,17 @@ public class QuestionnaireFhirResource {
      */
     @GetMapping("/Questionnaire/{id}")
     @Timed
-    public String getQuestionnaire(@PathVariable Long id) {
+    public ResponseEntity<String> getQuestionnaire(@PathVariable Long id) {
         log.debug("REST request to get Questionnaire in FHIR : {}", id);
 
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = getQuestionnaireResource(id);
-        if (questionnaireFhir == null){ return  "[]"; }
+        if (questionnaireFhir == null){ return new ResponseEntity<>("[]", HttpStatus.OK); }
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireFhir);
-        return encode;
+        return new ResponseEntity<>(encode, HttpStatus.OK);
     }
 
 
@@ -149,7 +149,7 @@ public class QuestionnaireFhirResource {
         String questionnaireResponseString;
         JsonObject questionnaireJson;
         for(Questionnaire patient: actionList) {
-            questionnaireResponseString = getQuestionnaire(patient.getId());
+            questionnaireResponseString = getQuestionnaire(patient.getId()).getBody();
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             questionnaireJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
             questionnaireArray.add(questionnaireJson);

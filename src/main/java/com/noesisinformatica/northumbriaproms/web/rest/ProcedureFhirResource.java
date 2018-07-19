@@ -72,18 +72,18 @@ public class ProcedureFhirResource {
      */
     @GetMapping("/Procedure/{id}")
     @Timed
-    public String getProcedure(@PathVariable Long id) {
+    public ResponseEntity<String> getProcedure(@PathVariable Long id) {
         log.debug("REST request to get Procedure in FHIR : {}", id);
 
         org.hl7.fhir.dstu3.model.Procedure procedureFhir = getProcedureResource(id);
-        if (procedureFhir == null){return "[]";}
+        if (procedureFhir == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
 
         //FHIR conversion
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
         p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(procedureFhir);
-        return encode;
+        return new ResponseEntity<>(encode, HttpStatus.OK);
     }
 
 
@@ -152,7 +152,7 @@ public class ProcedureFhirResource {
         String questionnaireResponseString;
         JsonObject procedureJson;
         for(Procedure patient: actionList) {
-            questionnaireResponseString = getProcedure(patient.getId());
+            questionnaireResponseString = getProcedure(patient.getId()).getBody();
             com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
             procedureJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
             procedureArray.add(procedureJson);
