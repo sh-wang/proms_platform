@@ -320,21 +320,21 @@ public class QuestionnaireResponseFhirResource {
             questionnaireQueryModel.setQuestionnaire(emptyValue);
         }
         if(status!=null){
-            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
+            if (status.equals("in-progress")){
                 questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.STARTED.toString()));
             }
-            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
+            if (status.equals("?")){
                 questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNINITIALISED.toString()));
             }
             if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED.toString())){
                 questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.COMPLETED.toString()));
             }
-            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
-                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNKNOWN.toString()));
-            }
-            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
-                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.PENDING.toString()));
-            }
+//            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
+//                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNKNOWN.toString()));
+//            }
+//            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
+//                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.PENDING.toString()));
+//            }
 
         }else{
             questionnaireQueryModel.setStatus(emptyValue);
