@@ -31,6 +31,7 @@ import com.noesisinformatica.northumbriaproms.repository.FollowupActionRepositor
 import com.noesisinformatica.northumbriaproms.repository.search.FollowupActionSearchRepository;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QuestionnaireQueryModel;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -360,6 +361,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         log.debug("boolQueryBuilder = " + boolQueryBuilder);
+        System.out.println(boolQueryBuilder);
         // build and return boolean query
         return getFacetedPageForQuery(boolQueryBuilder, pageable);
     }
@@ -425,5 +427,84 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         Page<FollowupAction> result = followupActionSearchRepository.search(queryStringQuery(query), pageable);
         return result;
 
+    }
+
+    /**
+     * Search for the followupAction corresponding to the query.
+     *
+     * @param query the query of the search
+     *
+     * @param pageable the pagination information
+     * @return the list of entities
+     */
+    public FacetedPage<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable){
+        log.debug("Request to search for a page of Questionnaire Response for query {}", query);
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        BoolQueryBuilder identifierQueryBuilder = QueryBuilders.boolQuery();
+        for(String identifier : query.getIdentifier()) {
+            identifierQueryBuilder.should(QueryBuilders.matchQuery("id", identifier));
+        }
+
+        BoolQueryBuilder parentQueryBuilder = QueryBuilders.boolQuery();
+        for(String parent : query.getIdentifier()) {
+            parentQueryBuilder.should(QueryBuilders.matchPhraseQuery("careEvent.followupPlan.procedureBooking.id", parent));
+        }
+
+        BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();
+        for(String questionnaire : query.getIdentifier()) {
+            questionnaireQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionnaire.id", questionnaire));
+        }
+
+        BoolQueryBuilder statusQueryBuilder = QueryBuilders.boolQuery();
+        for(String status : query.getStatus()) {
+            statusQueryBuilder.should(QueryBuilders.matchQuery("status", status));
+        }
+        BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
+        for(String patient : query.getIdentifier()) {
+            patientQueryBuilder.should(QueryBuilders.matchQuery("patient.id", patient));
+        }
+
+        BoolQueryBuilder subjectQueryBuilder = QueryBuilders.boolQuery();
+        for(String subject : query.getIdentifier()) {
+            subjectQueryBuilder.should(QueryBuilders.matchQuery("patient.id", subject));
+        }
+
+
+        // we only add procedures clause if there are 1 or more procedure specified
+        if(query.getIdentifier().size() > 0){
+            boolQueryBuilder.must(identifierQueryBuilder);
+        }
+
+        // we only add locations clause if there are 1 or more locations specified
+        if(query.getParent().size() > 0){
+            boolQueryBuilder.must(parentQueryBuilder);
+        }
+
+        // we only add phases clause if there are 1 or more phase specified
+        if (query.getQuestionnaire().size() > 0){
+            boolQueryBuilder.must(questionnaireQueryBuilder);
+        }
+
+        // we only add care events clause if there are 1 or more care events specified
+        if (query.getStatus().size() > 0){
+            boolQueryBuilder.must(statusQueryBuilder);
+        }
+
+        // we only add statuses clause if there are 1 or more statuses specified
+        if (query.getPatient().size() > 0){
+            boolQueryBuilder.must(patientQueryBuilder);
+        }
+
+        // we only add laterality clause if there are 1 or more sides specified
+        if (query.getSubject().size() > 0){
+            boolQueryBuilder.must(subjectQueryBuilder);
+        }
+
+        log.debug("boolQueryBuilder = " + boolQueryBuilder);
+        // build and return boolean query
+        System.out.println(boolQueryBuilder);
+        return getFacetedPageForQuery(boolQueryBuilder, pageable);
     }
 }

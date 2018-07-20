@@ -9,6 +9,7 @@ public class QuestionnaireQueryModel {
     List<String> questionnaire = new ArrayList<>();
     List<String> status = new ArrayList<>();
     List<String> patient = new ArrayList<>();
+    List<String> subject = new ArrayList<>();
 
     public List<String> getIdentifier() {
         return identifier;
@@ -50,6 +51,14 @@ public class QuestionnaireQueryModel {
         this.patient = patient;
     }
 
+    public List<String> getSubject() {
+        return subject;
+    }
+
+    public void setSubject(List<String> subject) {
+        this.subject = subject;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("QuestionnaireQueryModel{");
@@ -57,6 +66,7 @@ public class QuestionnaireQueryModel {
         sb.append(", parent=").append(parent);
         sb.append(", questionnaire=").append(questionnaire);
         sb.append(", status=").append(status);
+        sb.append(", subject=").append(subject);
         sb.append(", patient='").append(patient).append('\'');
         sb.append('}');
         return sb.toString();

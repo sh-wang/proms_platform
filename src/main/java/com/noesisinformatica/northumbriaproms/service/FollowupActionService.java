@@ -27,6 +27,7 @@ package com.noesisinformatica.northumbriaproms.service;
 import com.noesisinformatica.northumbriaproms.domain.CareEvent;
 import com.noesisinformatica.northumbriaproms.domain.FollowupAction;
 import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QuestionnaireQueryModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.FacetedPage;
@@ -103,6 +104,16 @@ public interface FollowupActionService {
      * @return the list of entities
      */
     FacetedPage<FollowupAction> search(QueryModel query, Pageable pageable);
+
+    /**
+     * Search for the followupAction corresponding to the query.
+     *
+     * @param query the query of the search
+     *
+     * @param pageable the pagination information
+     * @return the list of entities
+     */
+    FacetedPage<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable);
 
     /**
      * Search for the FollowupAction corresponding to the query.

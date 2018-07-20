@@ -36,7 +36,7 @@ import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.service.dto.FollowupActionCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
-import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QuestionnaireQueryModel;
 import org.hl7.fhir.dstu3.model.*;
 import org.hl7.fhir.dstu3.model.Procedure;
 import org.slf4j.Logger;
@@ -178,6 +178,112 @@ public class QuestionnaireResponseFhirResource {
     }
 
 
+//    /**
+//     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
+//     * to the query.
+//     * @return the result of the search
+//     */
+//    @GetMapping("/Questionnaire-response")
+//    @Timed
+//    public ResponseEntity<String> searchQuestionnaireResponse(String procedures, String consultants,
+//                                                              String locations, String patientIds,
+//                                                              String phases, String types,
+//                                                              String genders, String sides,
+//                                                              String careEvents,
+//                                                              Integer minAge, Integer maxAge,
+//                                                              String token, String statuses,
+//                                                              @PageableDefault(sort = {"id"},
+//                                                                  direction = Sort.Direction.DESC) Pageable pageable) {
+//
+////        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
+////            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
+////
+////        }
+//
+//        QueryModel query = new QueryModel();
+//        List<String> emptyValue = new ArrayList();
+//        if(procedures!=null){
+//            query.setProcedures(Collections.singletonList(procedures));
+//        }else{
+//            query.setProcedures(emptyValue);
+//        }
+//        if(consultants!=null){
+//            query.setConsultants(Collections.singletonList(consultants));
+//        }else {
+//            query.setConsultants(emptyValue);
+//        }
+//        if(locations!=null){
+//            query.setLocations(Collections.singletonList(locations));
+//        }else{
+//            query.setLocations(emptyValue);
+//        }
+//        if(careEvents!=null){
+//            query.setCareEvents(Collections.singletonList(careEvents));
+//        }else{
+//            query.setCareEvents(emptyValue);
+//        }
+//        if(patientIds!=null){
+//            query.setPatientIds(Collections.singletonList(patientIds));
+//        }else{
+//            query.setPatientIds(emptyValue);
+//        }
+//        if(genders!=null){
+//            query.setGenders(Collections.singletonList(genders));
+//        }else{
+//            query.setGenders(emptyValue);
+//        }
+//        if(phases!=null){
+//            query.setPhases(Collections.singletonList(phases));
+//        }else{
+//            query.setPhases(emptyValue);
+//        }
+//        if(maxAge!=null){
+//            query.setMaxAge(maxAge);
+//        }else{
+//            query.setMaxAge(100);
+//        }
+//        if(minAge!=null){
+//            query.setMinAge(minAge);
+//        }else{
+//            query.setMinAge(0);
+//        }
+//        if(types!=null){
+//            query.setTypes(Collections.singletonList(types));
+//        }else{
+//            query.setTypes(emptyValue);
+//        }
+//        if(sides!=null){
+//            query.setSides(Collections.singletonList(sides));
+//        }else{
+//            query.setSides(emptyValue);
+//        }
+//
+//        if (statuses != null){
+//            query.setStatuses(Collections.singletonList(statuses));
+//        }else {
+//            query.setStatuses(emptyValue);
+//        }
+//
+//        if(token!=null){
+//            query.setToken(token);
+//        }else{
+//            query.setToken("");
+//        }
+//
+//        log.debug("REST request to search for a page of FollowupActions for query {}", query);
+//        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
+//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(),
+//            page, "/api/fhir/Questionnaire-response");
+//        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
+//
+//        // wrap results page in a response entity with faceted results turned into a map
+//        JsonArray QuesResArray = JsonConversion(page);
+//
+//        return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
+//
+//    }
+
+
     /**
      * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
      * to the query.
@@ -185,13 +291,9 @@ public class QuestionnaireResponseFhirResource {
      */
     @GetMapping("/Questionnaire-response")
     @Timed
-    public ResponseEntity<String> searchQuestionnaireResponse(String procedures, String consultants,
-                                                              String locations, String patientIds,
-                                                              String phases, String types,
-                                                              String genders, String sides,
-                                                              String careEvents,
-                                                              Integer minAge, Integer maxAge,
-                                                              String token, String statuses,
+    public ResponseEntity<String> searchQuestionnaireResponse(String identifier, String parent,
+                                                              String questionnaire, String status,
+                                                              String patient, String subject,
                                                               @PageableDefault(sort = {"id"},
                                                                   direction = Sort.Direction.DESC) Pageable pageable) {
 
@@ -199,80 +301,57 @@ public class QuestionnaireResponseFhirResource {
 //            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
 //
 //        }
-
-        QueryModel query = new QueryModel();
+        QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
-        if(procedures!=null){
-            query.setProcedures(Collections.singletonList(procedures));
+        if(identifier!=null){
+            questionnaireQueryModel.setIdentifier(Collections.singletonList(identifier));
         }else{
-            query.setProcedures(emptyValue);
+            questionnaireQueryModel.setIdentifier(emptyValue);
         }
-        if(consultants!=null){
-            query.setConsultants(Collections.singletonList(consultants));
+        if(parent!=null){
+            questionnaireQueryModel.setParent(Collections.singletonList(parent));
         }else {
-            query.setConsultants(emptyValue);
+            questionnaireQueryModel.setParent(emptyValue);
         }
-        if(locations!=null){
-            query.setLocations(Collections.singletonList(locations));
+        if(questionnaire!=null){
+            questionnaireQueryModel.setQuestionnaire(Collections.singletonList(questionnaire));
         }else{
-            query.setLocations(emptyValue);
+            questionnaireQueryModel.setQuestionnaire(emptyValue);
         }
-        if(careEvents!=null){
-            query.setCareEvents(Collections.singletonList(careEvents));
+        if(status!=null){
+            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
+                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.STARTED.toString()));
+            }
+            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
+                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNINITIALISED.toString()));
+            }
+            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED.toString())){
+                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.COMPLETED.toString()));
+            }
+            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
+                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNKNOWN.toString()));
+            }
+            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
+                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.PENDING.toString()));
+            }
+
         }else{
-            query.setCareEvents(emptyValue);
+            questionnaireQueryModel.setStatus(emptyValue);
         }
-        if(patientIds!=null){
-            query.setPatientIds(Collections.singletonList(patientIds));
+        if(patient!=null){
+            questionnaireQueryModel.setPatient(Collections.singletonList(patient));
         }else{
-            query.setPatientIds(emptyValue);
+            questionnaireQueryModel.setPatient(emptyValue);
         }
-        if(genders!=null){
-            query.setGenders(Collections.singletonList(genders));
+        if(subject!=null){
+            questionnaireQueryModel.setStatus(Collections.singletonList(subject));
         }else{
-            query.setGenders(emptyValue);
-        }
-        if(phases!=null){
-            query.setPhases(Collections.singletonList(phases));
-        }else{
-            query.setPhases(emptyValue);
-        }
-        if(maxAge!=null){
-            query.setMaxAge(maxAge);
-        }else{
-            query.setMaxAge(100);
-        }
-        if(minAge!=null){
-            query.setMinAge(minAge);
-        }else{
-            query.setMinAge(0);
-        }
-        if(types!=null){
-            query.setTypes(Collections.singletonList(types));
-        }else{
-            query.setTypes(emptyValue);
-        }
-        if(sides!=null){
-            query.setSides(Collections.singletonList(sides));
-        }else{
-            query.setSides(emptyValue);
+            questionnaireQueryModel.setStatus(emptyValue);
         }
 
-        if (statuses != null){
-            query.setStatuses(Collections.singletonList(statuses));
-        }else {
-            query.setStatuses(emptyValue);
-        }
-
-        if(token!=null){
-            query.setToken(token);
-        }else{
-            query.setToken("");
-        }
-
-        log.debug("REST request to search for a page of FollowupActions for query {}", query);
-        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(),
+        log.debug("REST request to search for a page of FollowupActions for query {}", questionnaireQueryModel);
+        FacetedPage<FollowupAction> page = followupActionService.searchQuestionnaire(questionnaireQueryModel, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(questionnaireQueryModel.toString(),
             page, "/api/fhir/Questionnaire-response");
         if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
@@ -282,6 +361,8 @@ public class QuestionnaireResponseFhirResource {
         return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
 
     }
+
+
 
 
 
