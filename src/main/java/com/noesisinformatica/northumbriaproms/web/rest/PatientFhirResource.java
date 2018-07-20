@@ -69,10 +69,14 @@ public class PatientFhirResource {
 
     private final PatientService patientService;
     private final AddressService addressService;
+    private final PatientQueryService patientQueryService;
+
     public PatientFhirResource(PatientService patientService,
-                               AddressService addressService) {
+                               AddressService addressService,
+                               PatientQueryService patientQueryService) {
         this.patientService = patientService;
         this.addressService = addressService;
+        this.patientQueryService = patientQueryService;
     }
 
 
@@ -217,29 +221,47 @@ public class PatientFhirResource {
 //     * @param pageable the pagination information
 //     * @return the result of the search in FHIR
 //     */
-//    @GetMapping("/Patient")
-//    @Timed
-//    public ResponseEntity<String> searchPatients(String postcode, String family, Pageable pageable) {
-//        Map query = new HashMap();
-//        query.put("address-postalcode", postcode);
-//        query.put("family", family);
-//        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
-//        Page<Patient> page = patientService.search(query, pageable);
+    @GetMapping("/Patient")
+    @Timed
+    public ResponseEntity<String> searchPatients(String postcode, String family, Long id, Pageable pageable) {
+        Map query = new HashMap();
+        query.put("address-postalcode", postcode);
+        query.put("family", family);
+        query.put("id", id);
+        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
+        Page<Patient> page = patientService.search(query, pageable);
 //        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
 //            (query.get("family").toString(), page, "/api/fhir/Patient");
+
+        List<Patient> patientList = page.getContent();
+        if(patientList!=null){
+            System.out.println(patientList.size());
+        }
+        JsonArray patArray = new JsonArray();
+
+        for(Patient pat: patientList){
+            String patInfo = getPatient(pat.getId()).getBody();
+            com.google.gson.JsonParser toJson = new JsonParser();
+            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
+            patArray.add(patJson);
+        }
+        return new ResponseEntity<>(patArray.toString(), HttpStatus.OK);
+
+
+    }
+
+
+//    @GetMapping("/Patients")
+//    @Timed
+//    public ResponseEntity<String> searchPatient(PatientCriteria criteria, Pageable pageable) {
+//        log.debug("REST request to get Patients by criteria: {}", criteria);
+//        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
+//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/fhir/Patients");
+//        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 //
-//        List<Patient> patientList = page.getContent();
-//        JsonArray patArray = new JsonArray();
+//        JsonArray patientArray = JsonConversion(page);
 //
-//        for(Patient pat: patientList){
-//            String patInfo = getPatient(pat.getId()).getBody();
-//            com.google.gson.JsonParser toJson = new JsonParser();
-//            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
-//            patArray.add(patJson);
-//        }
-//        return new ResponseEntity<>(patArray.toString(),headers, HttpStatus.OK);
-//
-//
+//        return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
 //    }
 
 

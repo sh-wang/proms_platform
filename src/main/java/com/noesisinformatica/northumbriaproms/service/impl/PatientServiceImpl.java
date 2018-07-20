@@ -38,6 +38,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+
 /**
  * Service Implementation for managing Patient.
  */
@@ -115,20 +117,46 @@ public class PatientServiceImpl implements PatientService{
      * @param pageable the pagination information
      * @return the list of entities
      */
+//    @Override
+//    @Transactional(readOnly = true)
+//    public Page<Patient> search(String query, Pageable pageable) {
+//        log.debug("Request to search for a page of Patients for query {}", query);
+//        QueryBuilder queryBuilder = null;
+//        // try to see if query is number, if it is try as nhs number otherwise try as name
+//        try {
+//            Long number = Long.parseLong(query);
+//            queryBuilder = QueryBuilders.termQuery("nhsNumber", number);
+//        } catch (NumberFormatException e) {
+//            queryBuilder =
+//                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
+//        }
+//        Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
+//        return result;
+//    }
+
     @Override
     @Transactional(readOnly = true)
-    public Page<Patient> search(String query, Pageable pageable) {
+    public Page<Patient> search(Map query, Pageable pageable) {
         log.debug("Request to search for a page of Patients for query {}", query);
         QueryBuilder queryBuilder = null;
-        // try to see if query is number, if it is try as nhs number otherwise try as name
-        try {
-            Long number = Long.parseLong(query);
-            queryBuilder = QueryBuilders.termQuery("nhsNumber", number);
-        } catch (NumberFormatException e) {
-            queryBuilder =
-                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
+
+        if(query.get("family")!= null){
+            queryBuilder = QueryBuilders.termQuery("familyName", query.get("family"));
+            System.out.println(query.get("family"));
         }
+        if(query.get("id")!=null){
+            queryBuilder = QueryBuilders.termQuery("id", query.get("id"));
+        }
+//        // try to see if query is number, if it is try as nhs number otherwise try as name
+//        try {
+//            Long number = Long.parseLong(query);
+//            queryBuilder = QueryBuilders.termQuery("nhsNumber", number);
+//        } catch (NumberFormatException e) {
+//            queryBuilder =
+//                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
+//        }
         Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
+        System.out.println(result.getContent().size());
         return result;
     }
 }
