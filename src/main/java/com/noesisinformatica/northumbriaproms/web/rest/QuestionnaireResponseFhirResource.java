@@ -297,6 +297,7 @@ public class QuestionnaireResponseFhirResource {
                                                               @PageableDefault(sort = {"id"},
                                                                   direction = Sort.Direction.DESC) Pageable pageable) {
 
+
 //        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
 //            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
 //

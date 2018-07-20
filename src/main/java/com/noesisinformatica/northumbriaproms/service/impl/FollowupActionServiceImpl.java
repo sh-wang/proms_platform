@@ -448,12 +448,12 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         BoolQueryBuilder parentQueryBuilder = QueryBuilders.boolQuery();
-        for(String parent : query.getIdentifier()) {
+        for(String parent : query.getParent()) {
             parentQueryBuilder.should(QueryBuilders.matchPhraseQuery("careEvent.followupPlan.procedureBooking.id", parent));
         }
 
         BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();
-        for(String questionnaire : query.getIdentifier()) {
+        for(String questionnaire : query.getQuestionnaire()) {
             questionnaireQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionnaire.id", questionnaire));
         }
 
@@ -462,12 +462,12 @@ public class FollowupActionServiceImpl implements FollowupActionService {
             statusQueryBuilder.should(QueryBuilders.matchQuery("status", status));
         }
         BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
-        for(String patient : query.getIdentifier()) {
+        for(String patient : query.getPatient()) {
             patientQueryBuilder.should(QueryBuilders.matchQuery("patient.id", patient));
         }
 
         BoolQueryBuilder subjectQueryBuilder = QueryBuilders.boolQuery();
-        for(String subject : query.getIdentifier()) {
+        for(String subject : query.getSubject()) {
             subjectQueryBuilder.should(QueryBuilders.matchQuery("patient.id", subject));
         }
 
