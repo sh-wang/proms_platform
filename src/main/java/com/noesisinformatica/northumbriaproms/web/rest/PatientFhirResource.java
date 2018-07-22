@@ -223,11 +223,19 @@ public class PatientFhirResource {
 //     */
     @GetMapping("/Patient")
     @Timed
-    public ResponseEntity<String> searchPatients(String postcode, String family, Long id, Pageable pageable) {
+    public ResponseEntity<String> searchPatients(String address_postalcode, String birthdate,String family, String email, String gender, String given, String name, Long phone, Long identifier, Pageable pageable) {
+
         Map query = new HashMap();
-        query.put("address-postalcode", postcode);
+        query.put("address-postalcode", address_postalcode);
+        query.put("name", name);
+        query.put("identifier", identifier);
         query.put("family", family);
-        query.put("id", id);
+        query.put("birthdate", birthdate);
+        query.put("email", email);
+        query.put("gender", gender);
+        query.put("given", given);
+        query.put("phone", phone);
+
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
         Page<Patient> page = patientService.searchFHIR(query, pageable);
 //        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
