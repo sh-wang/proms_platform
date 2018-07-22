@@ -31,6 +31,7 @@ import com.codahale.metrics.annotation.Timed;
 import com.noesisinformatica.northumbriaproms.domain.*;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.Questionnaire;
+import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionPhase;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionQueryService;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
@@ -53,6 +54,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.spring.web.json.Json;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 import com.google.gson.JsonArray;
@@ -99,9 +102,8 @@ public class QuestionnaireResponseFhirResource {
     public ResponseEntity<String> getByFollowupActionId(@PathVariable Long id){
         log.debug("REST request to get questionnaire response in FHIR by followup-action ID", id);
 
-        FollowupAction followupAction = followupActionService.findOne(id);
-        if (followupAction == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse = getQuestionnaireResponseResource(id);
+        if (questionnaireResponse == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
 
         FhirContext ctx = FhirContext.forDstu3();
         IParser p =ctx.newJsonParser();
@@ -145,6 +147,12 @@ public class QuestionnaireResponseFhirResource {
         org.hl7.fhir.dstu3.model.Reference refePr = new org.hl7.fhir.dstu3.model.Reference(procedureFHIR);
         questionnaireResponse.addParent(refePr);
 
+        //add completed date
+        try{
+            ZonedDateTime completedDate = followupAction.getCompletedDate().atStartOfDay(ZoneId.systemDefault());
+            questionnaireResponse.setAuthored(Date.from(completedDate.toInstant()));
+        }catch (Exception e){ }
+
         // add patient's questionnaire need to accomplish, in the format of fhir standard, json format.
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFHIR = questionnaireFhirResource
             .getQuestionnaireResource(followupAction.getQuestionnaire().getId());
@@ -162,7 +170,8 @@ public class QuestionnaireResponseFhirResource {
 //                org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
 //                s.setValue(followupAction.getOutcomeComment());
                 i.setValue(responseItem.getValue());
-                questionnaireResponse.addItem().setLinkId(responseItem.getId().toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i);
+                questionnaireResponse.addItem().setLinkId(responseItem.getId().
+                    toString()).setText(responseItem.getLocalId()).addAnswer().setValue(i);
             }
             // outcome comment
             org.hl7.fhir.dstu3.model.StringType s = new org.hl7.fhir.dstu3.model.StringType();
@@ -295,15 +304,15 @@ public class QuestionnaireResponseFhirResource {
                                                               String questionnaire, String status,
                                                               String patient, String subject,
                                                               @PageableDefault(sort = {"id"},
-                                                                  direction = Sort.Direction.DESC) Pageable pageable) {
+                                                                  direction = Sort.Direction.ASC) Pageable pageable) {
 
 
-//        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
-//            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
-//
-//        }
+        if(identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
+            return new ResponseEntity<>("[]", HttpStatus.OK);
+        }
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
+        List<ActionStatus> queryStatus = new ArrayList<>();
         if(identifier!=null){
             questionnaireQueryModel.setIdentifier(Collections.singletonList(identifier));
         }else{
@@ -320,24 +329,32 @@ public class QuestionnaireResponseFhirResource {
             questionnaireQueryModel.setQuestionnaire(emptyValue);
         }
         if(status!=null){
-            if (status.equals("in-progress")){
-                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.STARTED.toString()));
+            switch (status) {
+                case "inprogress":
+                    queryStatus.add(ActionStatus.STARTED);
+                    queryStatus.add(ActionStatus.PENDING);
+                    break;
+                case "INPROGRESS":
+                    queryStatus.add(ActionStatus.STARTED);
+                    queryStatus.add(ActionStatus.PENDING);
+                    break;
+                case "?":
+                    queryStatus.add(ActionStatus.UNKNOWN);
+                    queryStatus.add(ActionStatus.UNINITIALISED);
+                    break;
+                case "completed":
+                    queryStatus.add(ActionStatus.COMPLETED);
+                    break;
+                case "COMPLETED":
+                    queryStatus.add(ActionStatus.COMPLETED);
+                    break;
+                default:
+                    queryStatus.add(ActionStatus.FORSEARCH);
+                    break;
             }
-            if (status.equals("?")){
-                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNINITIALISED.toString()));
-            }
-            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED.toString())){
-                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.COMPLETED.toString()));
-            }
-//            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.NULL.toString())){
-//                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.UNKNOWN.toString()));
-//            }
-//            if (status.equals(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS.toString())){
-//                questionnaireQueryModel.setStatus(Collections.singletonList(ActionStatus.PENDING.toString()));
-//            }
-
+            questionnaireQueryModel.setStatus(queryStatus);
         }else{
-            questionnaireQueryModel.setStatus(emptyValue);
+            questionnaireQueryModel.setStatus(queryStatus);
         }
         if(patient!=null){
             questionnaireQueryModel.setPatient(Collections.singletonList(patient));
@@ -345,13 +362,13 @@ public class QuestionnaireResponseFhirResource {
             questionnaireQueryModel.setPatient(emptyValue);
         }
         if(subject!=null){
-            questionnaireQueryModel.setStatus(Collections.singletonList(subject));
+            questionnaireQueryModel.setSubject(Collections.singletonList(subject));
         }else{
-            questionnaireQueryModel.setStatus(emptyValue);
+            questionnaireQueryModel.setSubject(emptyValue);
         }
 
         log.debug("REST request to search for a page of FollowupActions for query {}", questionnaireQueryModel);
-        FacetedPage<FollowupAction> page = followupActionService.searchQuestionnaire(questionnaireQueryModel, pageable);
+        Page<FollowupAction> page = followupActionService.searchQuestionnaire(questionnaireQueryModel, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(questionnaireQueryModel.toString(),
             page, "/api/fhir/Questionnaire-response");
         if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }

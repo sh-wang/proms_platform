@@ -229,7 +229,7 @@ public class PatientFhirResource {
         query.put("family", family);
         query.put("id", id);
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
-        Page<Patient> page = patientService.search(query, pageable);
+        Page<Patient> page = patientService.searchFHIR(query, pageable);
 //        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
 //            (query.get("family").toString(), page, "/api/fhir/Patient");
 

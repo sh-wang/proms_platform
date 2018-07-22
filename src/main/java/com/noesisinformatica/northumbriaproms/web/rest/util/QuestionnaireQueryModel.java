@@ -1,5 +1,8 @@
 package com.noesisinformatica.northumbriaproms.web.rest.util;
 
+import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
+import org.hl7.fhir.dstu3.model.QuestionnaireResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +10,7 @@ public class QuestionnaireQueryModel {
     List<String> identifier = new ArrayList<>();
     List<String> parent = new ArrayList<>();
     List<String> questionnaire = new ArrayList<>();
-    List<String> status = new ArrayList<>();
+    List<ActionStatus> status = new ArrayList<>();
     List<String> patient = new ArrayList<>();
     List<String> subject = new ArrayList<>();
 
@@ -35,11 +38,11 @@ public class QuestionnaireQueryModel {
         this.questionnaire = questionnaire;
     }
 
-    public List<String> getStatus() {
+    public List<ActionStatus> getStatus() {
         return status;
     }
 
-    public void setStatus(List<String> status) {
+    public void setStatus(List<ActionStatus> status) {
         this.status = status;
     }
 

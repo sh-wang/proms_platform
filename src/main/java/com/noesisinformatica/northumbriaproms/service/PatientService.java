@@ -74,5 +74,15 @@ public interface PatientService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    Page<Patient> search(Map query, Pageable pageable);
+    Page<Patient> search(String query, Pageable pageable);
+
+    /**
+     * Search for the patient corresponding to the query.
+     *
+     * @param query the query of the search
+     *
+     * @param pageable the pagination information
+     * @return the list of entities
+     */
+    Page<Patient> searchFHIR(Map query, Pageable pageable);
 }

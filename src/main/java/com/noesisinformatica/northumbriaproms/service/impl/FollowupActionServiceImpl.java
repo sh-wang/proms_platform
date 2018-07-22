@@ -27,6 +27,7 @@ package com.noesisinformatica.northumbriaproms.service.impl;
 import com.noesisinformatica.northumbriaproms.config.Constants;
 import com.noesisinformatica.northumbriaproms.domain.CareEvent;
 import com.noesisinformatica.northumbriaproms.domain.FollowupAction;
+import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
 import com.noesisinformatica.northumbriaproms.repository.FollowupActionRepository;
 import com.noesisinformatica.northumbriaproms.repository.search.FollowupActionSearchRepository;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
@@ -414,22 +415,6 @@ public class FollowupActionServiceImpl implements FollowupActionService {
 
 
     /**
-     * Search for the patient corresponding to the query.
-     *
-     * @param query the query of the search
-     * @param pageable the pagination information
-     * @return the list of entities
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public Page<FollowupAction> search(String query, Pageable pageable) {
-        log.debug("Request to search for a page of Procedures for query {}", query);
-        Page<FollowupAction> result = followupActionSearchRepository.search(queryStringQuery(query), pageable);
-        return result;
-
-    }
-
-    /**
      * Search for the followupAction corresponding to the query.
      *
      * @param query the query of the search
@@ -437,7 +422,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    public FacetedPage<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable){
+    public Page<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable){
         log.debug("Request to search for a page of Questionnaire Response for query {}", query);
 
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
@@ -458,7 +443,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         BoolQueryBuilder statusQueryBuilder = QueryBuilders.boolQuery();
-        for(String status : query.getStatus()) {
+        for(ActionStatus status : query.getStatus()) {
             statusQueryBuilder.should(QueryBuilders.matchQuery("status", status));
         }
         BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
@@ -505,6 +490,24 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         log.debug("boolQueryBuilder = " + boolQueryBuilder);
         // build and return boolean query
         System.out.println(boolQueryBuilder);
-        return getFacetedPageForQuery(boolQueryBuilder, pageable);
+        return getPageForQuery(boolQueryBuilder, pageable);
+    }
+
+    private Page<FollowupAction> getPageForQuery(QueryBuilder queryBuilder, Pageable pageable) {
+        SearchQuery searchQuery = new NativeSearchQueryBuilder()
+            .withQuery(queryBuilder)
+            .withSort(getSortParameters(pageable))
+            .withPageable(pageable)
+            .addAggregation(new TermsBuilder("types").field("type").size(5).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("procedures").field("careEvent.followupPlan.procedureBooking.primaryProcedure").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("consultants").field("careEvent.followupPlan.procedureBooking.consultantName").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("locations").field("careEvent.followupPlan.procedureBooking.hospitalSite").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("genders").field("careEvent.followupPlan.patient.gender").size(5).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("phases").field("phase").size(10).order(Terms.Order.term(true)))
+            .build();
+
+        Page<FollowupAction> page = elasticsearchTemplate.queryForPage(searchQuery, FollowupAction.class);
+
+        return page;
     }
 }

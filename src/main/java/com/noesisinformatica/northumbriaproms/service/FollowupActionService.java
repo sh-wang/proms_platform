@@ -113,15 +113,5 @@ public interface FollowupActionService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    FacetedPage<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable);
-
-    /**
-     * Search for the FollowupAction corresponding to the query.
-     *
-     * @param query the query of the search
-     *
-     * @param pageable the pagination information
-     * @return the list of entities
-     */
-    Page<FollowupAction> search(String query, Pageable pageable);
+    Page<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable);
 }
