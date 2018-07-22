@@ -63,6 +63,8 @@ public class ProcedureFhirResource {
         this.procedureService = procedureService;
     }
 
+    private FhirContext ctx = FhirContext.forDstu3();
+    private IParser p =ctx.newJsonParser();
 
     /**
      * GET  /procedures/:id : get the "id" procedure.
@@ -79,9 +81,6 @@ public class ProcedureFhirResource {
         if (procedureFhir == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
 
         //FHIR conversion
-        FhirContext ctx = FhirContext.forDstu3();
-        IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(procedureFhir);
         return new ResponseEntity<>(encode, HttpStatus.OK);
     }

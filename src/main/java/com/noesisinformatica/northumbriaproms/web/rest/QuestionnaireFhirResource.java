@@ -63,6 +63,8 @@ public class QuestionnaireFhirResource {
     }
 
     private final String defaultPath = "localhost:8080/api/fhir/";
+    private FhirContext ctx = FhirContext.forDstu3();
+    private IParser p =ctx.newJsonParser();
 
 
     /**
@@ -79,9 +81,6 @@ public class QuestionnaireFhirResource {
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = getQuestionnaireResource(id);
         if (questionnaireFhir == null){ return new ResponseEntity<>("[]", HttpStatus.OK); }
 
-        FhirContext ctx = FhirContext.forDstu3();
-        IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireFhir);
         return new ResponseEntity<>(encode, HttpStatus.OK);
     }

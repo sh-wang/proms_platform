@@ -79,6 +79,8 @@ public class PatientFhirResource {
         this.patientQueryService = patientQueryService;
     }
 
+    private FhirContext ctx = FhirContext.forDstu3();
+    private IParser p =ctx.newJsonParser();
 
     /**
      * GET  /patients/:id : get the "id" patient in FHIR format.
@@ -95,8 +97,6 @@ public class PatientFhirResource {
         if (patientFhir == null){ return new ResponseEntity<>("[]", HttpStatus.OK); }
 
         //FHIR conversion
-        FhirContext ctx = FhirContext.forDstu3();
-        IParser p =ctx.newJsonParser();
         String encode = p.encodeResourceToString(patientFhir);
         return new ResponseEntity<>(encode, HttpStatus.OK);
     }

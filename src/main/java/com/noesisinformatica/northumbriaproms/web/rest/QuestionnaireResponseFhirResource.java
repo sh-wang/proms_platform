@@ -90,6 +90,8 @@ public class QuestionnaireResponseFhirResource {
         this.questionnaireFhirResource = questionnaireFhirResource;
     }
 
+    private FhirContext ctx = FhirContext.forDstu3();
+    private IParser p =ctx.newJsonParser();
 
     /**
      * GET  /followup-action/{id}.
@@ -105,9 +107,6 @@ public class QuestionnaireResponseFhirResource {
         org.hl7.fhir.dstu3.model.QuestionnaireResponse questionnaireResponse = getQuestionnaireResponseResource(id);
         if (questionnaireResponse == null){return new ResponseEntity<>("[]", HttpStatus.OK);}
 
-        FhirContext ctx = FhirContext.forDstu3();
-        IParser p =ctx.newJsonParser();
-        p.setPrettyPrint(false);
         String encode = p.encodeResourceToString(questionnaireResponse);
         return new ResponseEntity<>(encode, HttpStatus.OK);
     }
