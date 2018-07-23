@@ -153,8 +153,6 @@ public class PatientServiceImpl implements PatientService{
 //        String address_postalcode = query.get("address_postalcode").toString();
 //        Long phone = Long.parseLong(query.get("phone").toString());  no phone in patient entity
 
-
-
         if(query.get("family")!= null){
             queryBuilder = QueryBuilders.termQuery("familyName", query.get("family"));
             System.out.println(query.get("family"));
@@ -184,7 +182,6 @@ public class PatientServiceImpl implements PatientService{
 //                result.
 //            }
 //        }
-
 
 //        // try to see if query is number, if it is try as nhs number otherwise try as name
 //        try {

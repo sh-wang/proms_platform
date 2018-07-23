@@ -223,8 +223,12 @@ public class PatientFhirResource {
 //     */
     @GetMapping("/Patient")
     @Timed
-    public ResponseEntity<String> searchPatients(String address_postalcode, String birthdate,String family, String email, String gender, String given, String name, Long phone, Long identifier, Pageable pageable) {
-
+    public ResponseEntity<String> searchPatients(String address_postalcode,
+                                                 String birthdate,String family,
+                                                 String email, String gender,
+                                                 String given, String name,
+                                                 Long phone, Long identifier,
+                                                 Pageable pageable) {
         Map query = new HashMap();
         query.put("address-postalcode", address_postalcode);
         query.put("name", name);
@@ -238,23 +242,28 @@ public class PatientFhirResource {
 
         log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
         Page<Patient> page = patientService.searchFHIR(query, pageable);
-//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
-//            (query.get("family").toString(), page, "/api/fhir/Patient");
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
+            (query.toString(), page, "/api/fhir/Patient");
 
-        List<Patient> patientList = page.getContent();
-        if(patientList!=null){
-            System.out.println(patientList.size());
-        }
-        JsonArray patArray = new JsonArray();
+//        List<Patient> patientList = page.getContent();
+//        if(patientList!=null){
+//            System.out.println(patientList.size());
+//        }
+//        JsonArray patArray = new JsonArray();
+//
+//        for(Patient pat: patientList){
+//            String patInfo = getPatient(pat.getId()).getBody();
+//            com.google.gson.JsonParser toJson = new JsonParser();
+//            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
+//            patArray.add(patJson);
+//        }
+//        return new ResponseEntity<>(patArray.toString(), HttpStatus.OK);
 
-        for(Patient pat: patientList){
-            String patInfo = getPatient(pat.getId()).getBody();
-            com.google.gson.JsonParser toJson = new JsonParser();
-            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
-            patArray.add(patJson);
-        }
-        return new ResponseEntity<>(patArray.toString(), HttpStatus.OK);
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
 
+        JsonArray patientArray = JsonConversion(page);
+
+        return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
 
     }
 
