@@ -151,8 +151,8 @@ public class QuestionnaireResponseFhirResource {
 
         //add completed date
         try{
-            ZonedDateTime completedDate = followupAction.getCompletedDate().atStartOfDay(ZoneId.systemDefault());
-            questionnaireResponse.setAuthored(Date.from(completedDate.toInstant()));
+            questionnaireResponse.setAuthored(Date.from(followupAction.getCompletedDate().
+                atStartOfDay(ZoneId.systemDefault()).toInstant()));
         }catch (Exception e){ }
 
         // add patient's questionnaire need to accomplish, in the format of fhir standard, json format.
@@ -201,17 +201,15 @@ public class QuestionnaireResponseFhirResource {
                                                               String authored,
                                                               @PageableDefault(sort = {"id"},
                                                                   direction = Sort.Direction.ASC) Pageable pageable) {
-
-
         if(authored==null && identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
             return new ResponseEntity<>("[]", HttpStatus.OK);
         }
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
         List<ActionStatus> queryStatus = new ArrayList<>();
-        List<Date> dateempty = new ArrayList<>();
+        List<Date> dateEmpty = new ArrayList<>();
         if(authored!=null){
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date date = format.parse(authored);
                 questionnaireQueryModel.setAuthored(Collections.singletonList(date));
@@ -220,7 +218,7 @@ public class QuestionnaireResponseFhirResource {
             }
 
         }else{
-            questionnaireQueryModel.setAuthored(dateempty);
+            questionnaireQueryModel.setAuthored(dateEmpty);
         }
 
         if(identifier!=null){

@@ -192,7 +192,7 @@ public class PatientServiceImpl implements PatientService{
 //                QueryBuilders.multiMatchQuery(query, "givenName", "familyName").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX);
 //        }
         Page<Patient> result = patientSearchRepository.search(queryBuilder, pageable);
-        System.out.println(result.getContent().size());
+        System.out.println(queryBuilder);
         return result;
     }
 }

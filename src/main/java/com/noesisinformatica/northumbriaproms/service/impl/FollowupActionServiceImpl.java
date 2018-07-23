@@ -443,63 +443,64 @@ public class FollowupActionServiceImpl implements FollowupActionService {
 
         BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();
         for(String questionnaire : query.getQuestionnaire()) {
-            questionnaireQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionnaire.id", questionnaire));
+            questionnaireQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionnaire.name", questionnaire));
         }
 
         BoolQueryBuilder statusQueryBuilder = QueryBuilders.boolQuery();
         for(ActionStatus status : query.getStatus()) {
             statusQueryBuilder.should(QueryBuilders.matchQuery("status", status));
         }
+
         BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
         for(String patient : query.getPatient()) {
-            patientQueryBuilder.should(QueryBuilders.matchQuery("patient.id", patient));
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (patient, "patient.givenName", "patient.familyName"));
         }
 
         BoolQueryBuilder subjectQueryBuilder = QueryBuilders.boolQuery();
         for(String subject : query.getSubject()) {
-            subjectQueryBuilder.should(QueryBuilders.matchQuery("patient.id", subject));
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (subject, "patient.givenName", "patient.familyName"));
         }
 
         BoolQueryBuilder authoredQueryBuilder = QueryBuilders.boolQuery();
         for(Date authored : query.getAuthored()) {
-            Instant instant = authored.toInstant();
-            ZoneId zoneId = ZoneId.systemDefault();
-            LocalDate localAuthored = instant.atZone(zoneId).toLocalDate();
+            LocalDate localAuthored = authored.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             authoredQueryBuilder.should(QueryBuilders.matchQuery("completedDate", localAuthored));
         }
 
 
-        // we only add procedures clause if there are 1 or more procedure specified
+        // we only add Identifier clause if there are 1 or more Identifier specified
         if(query.getIdentifier().size() > 0){
             boolQueryBuilder.must(identifierQueryBuilder);
         }
 
-        // we only add procedures clause if there are 1 or more procedure specified
+        // we only add Authored clause if there are 1 or more Authored specified
         if(query.getAuthored().size() > 0){
             boolQueryBuilder.must(authoredQueryBuilder);
         }
 
-        // we only add locations clause if there are 1 or more locations specified
+        // we only add Parent clause if there are 1 or more Parent specified
         if(query.getParent().size() > 0){
             boolQueryBuilder.must(parentQueryBuilder);
         }
 
-        // we only add phases clause if there are 1 or more phase specified
+        // we only add Questionnaire clause if there are 1 or more Questionnaire specified
         if (query.getQuestionnaire().size() > 0){
             boolQueryBuilder.must(questionnaireQueryBuilder);
         }
 
-        // we only add care events clause if there are 1 or more care events specified
+        // we only add Status clause if there are 1 or more Status specified
         if (query.getStatus().size() > 0){
             boolQueryBuilder.must(statusQueryBuilder);
         }
 
-        // we only add statuses clause if there are 1 or more statuses specified
+        // we only add Patient clause if there are 1 or more Patient specified
         if (query.getPatient().size() > 0){
             boolQueryBuilder.must(patientQueryBuilder);
         }
 
-        // we only add laterality clause if there are 1 or more sides specified
+        // we only add Subject clause if there are 1 or more Subject specified
         if (query.getSubject().size() > 0){
             boolQueryBuilder.must(subjectQueryBuilder);
         }
@@ -515,12 +516,11 @@ public class FollowupActionServiceImpl implements FollowupActionService {
             .withQuery(queryBuilder)
             .withSort(getSortParameters(pageable))
             .withPageable(pageable)
-            .addAggregation(new TermsBuilder("types").field("type").size(5).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("procedures").field("careEvent.followupPlan.procedureBooking.primaryProcedure").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("consultants").field("careEvent.followupPlan.procedureBooking.consultantName").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("locations").field("careEvent.followupPlan.procedureBooking.hospitalSite").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("genders").field("careEvent.followupPlan.patient.gender").size(5).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("phases").field("phase").size(10).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("procedures").field("careEvent.followupPlan.procedureBooking.id").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("questionnaire").field("questionnaire.name").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("status").field("status").size(10).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("patient").field("patient.givenName" + " patient.familyName").size(100).order(Terms.Order.term(true)))
+            .addAggregation(new TermsBuilder("subject").field("patient.givenName" + " patient.familyName").size(100).order(Terms.Order.term(true)))
             .build();
 
         Page<FollowupAction> page = elasticsearchTemplate.queryForPage(searchQuery, FollowupAction.class);
