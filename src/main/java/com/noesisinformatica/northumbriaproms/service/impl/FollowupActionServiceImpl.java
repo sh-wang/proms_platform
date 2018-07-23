@@ -55,6 +55,10 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -456,10 +460,23 @@ public class FollowupActionServiceImpl implements FollowupActionService {
             subjectQueryBuilder.should(QueryBuilders.matchQuery("patient.id", subject));
         }
 
+        BoolQueryBuilder authoredQueryBuilder = QueryBuilders.boolQuery();
+        for(Date authored : query.getAuthored()) {
+            Instant instant = authored.toInstant();
+            ZoneId zoneId = ZoneId.systemDefault();
+            LocalDate localAuthored = instant.atZone(zoneId).toLocalDate();
+            authoredQueryBuilder.should(QueryBuilders.matchQuery("completedDate", localAuthored));
+        }
+
 
         // we only add procedures clause if there are 1 or more procedure specified
         if(query.getIdentifier().size() > 0){
             boolQueryBuilder.must(identifierQueryBuilder);
+        }
+
+        // we only add procedures clause if there are 1 or more procedure specified
+        if(query.getAuthored().size() > 0){
+            boolQueryBuilder.must(authoredQueryBuilder);
         }
 
         // we only add locations clause if there are 1 or more locations specified

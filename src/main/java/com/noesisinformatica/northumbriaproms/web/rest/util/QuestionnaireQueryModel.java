@@ -4,6 +4,7 @@ import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
 import org.hl7.fhir.dstu3.model.QuestionnaireResponse;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class QuestionnaireQueryModel {
@@ -11,6 +12,7 @@ public class QuestionnaireQueryModel {
     List<String> parent = new ArrayList<>();
     List<String> questionnaire = new ArrayList<>();
     List<ActionStatus> status = new ArrayList<>();
+    List<Date> authored = new ArrayList<>();
     List<String> patient = new ArrayList<>();
     List<String> subject = new ArrayList<>();
 
@@ -62,6 +64,14 @@ public class QuestionnaireQueryModel {
         this.subject = subject;
     }
 
+    public List<Date> getAuthored() {
+        return authored;
+    }
+
+    public void setAuthored(List<Date> authored) {
+        this.authored = authored;
+    }
+
     @Override
     public String toString() {
         final StringBuffer sb = new StringBuffer("QuestionnaireQueryModel{");
@@ -70,6 +80,7 @@ public class QuestionnaireQueryModel {
         sb.append(", questionnaire=").append(questionnaire);
         sb.append(", status=").append(status);
         sb.append(", subject=").append(subject);
+        sb.append(", authored=").append(authored);
         sb.append(", patient='").append(patient).append('\'');
         sb.append('}');
         return sb.toString();

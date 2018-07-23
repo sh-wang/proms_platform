@@ -54,6 +54,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.spring.web.json.Json;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -185,113 +188,6 @@ public class QuestionnaireResponseFhirResource {
         return questionnaireResponse;
     }
 
-
-//    /**
-//     * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
-//     * to the query.
-//     * @return the result of the search
-//     */
-//    @GetMapping("/Questionnaire-response")
-//    @Timed
-//    public ResponseEntity<String> searchQuestionnaireResponse(String procedures, String consultants,
-//                                                              String locations, String patientIds,
-//                                                              String phases, String types,
-//                                                              String genders, String sides,
-//                                                              String careEvents,
-//                                                              Integer minAge, Integer maxAge,
-//                                                              String token, String statuses,
-//                                                              @PageableDefault(sort = {"id"},
-//                                                                  direction = Sort.Direction.DESC) Pageable pageable) {
-//
-////        if(procedures==null && consultants==null && locations==null && patientIds==null && phases==null && types==null
-////            && genders==null && sides==null && careEvents==null && minAge==null && maxAge==null && token==null){
-////
-////        }
-//
-//        QueryModel query = new QueryModel();
-//        List<String> emptyValue = new ArrayList();
-//        if(procedures!=null){
-//            query.setProcedures(Collections.singletonList(procedures));
-//        }else{
-//            query.setProcedures(emptyValue);
-//        }
-//        if(consultants!=null){
-//            query.setConsultants(Collections.singletonList(consultants));
-//        }else {
-//            query.setConsultants(emptyValue);
-//        }
-//        if(locations!=null){
-//            query.setLocations(Collections.singletonList(locations));
-//        }else{
-//            query.setLocations(emptyValue);
-//        }
-//        if(careEvents!=null){
-//            query.setCareEvents(Collections.singletonList(careEvents));
-//        }else{
-//            query.setCareEvents(emptyValue);
-//        }
-//        if(patientIds!=null){
-//            query.setPatientIds(Collections.singletonList(patientIds));
-//        }else{
-//            query.setPatientIds(emptyValue);
-//        }
-//        if(genders!=null){
-//            query.setGenders(Collections.singletonList(genders));
-//        }else{
-//            query.setGenders(emptyValue);
-//        }
-//        if(phases!=null){
-//            query.setPhases(Collections.singletonList(phases));
-//        }else{
-//            query.setPhases(emptyValue);
-//        }
-//        if(maxAge!=null){
-//            query.setMaxAge(maxAge);
-//        }else{
-//            query.setMaxAge(100);
-//        }
-//        if(minAge!=null){
-//            query.setMinAge(minAge);
-//        }else{
-//            query.setMinAge(0);
-//        }
-//        if(types!=null){
-//            query.setTypes(Collections.singletonList(types));
-//        }else{
-//            query.setTypes(emptyValue);
-//        }
-//        if(sides!=null){
-//            query.setSides(Collections.singletonList(sides));
-//        }else{
-//            query.setSides(emptyValue);
-//        }
-//
-//        if (statuses != null){
-//            query.setStatuses(Collections.singletonList(statuses));
-//        }else {
-//            query.setStatuses(emptyValue);
-//        }
-//
-//        if(token!=null){
-//            query.setToken(token);
-//        }else{
-//            query.setToken("");
-//        }
-//
-//        log.debug("REST request to search for a page of FollowupActions for query {}", query);
-//        FacetedPage<FollowupAction> page = followupActionService.search(query, pageable);
-//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query.toString(),
-//            page, "/api/fhir/Questionnaire-response");
-//        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
-//
-//        // wrap results page in a response entity with faceted results turned into a map
-//        JsonArray QuesResArray = JsonConversion(page);
-//
-//        return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
-//
-//    }
-
-
     /**
      * SEARCH  /_search/followup-actions?query=:query : search for the followupAction corresponding
      * to the query.
@@ -302,16 +198,31 @@ public class QuestionnaireResponseFhirResource {
     public ResponseEntity<String> searchQuestionnaireResponse(String identifier, String parent,
                                                               String questionnaire, String status,
                                                               String patient, String subject,
+                                                              String authored,
                                                               @PageableDefault(sort = {"id"},
                                                                   direction = Sort.Direction.ASC) Pageable pageable) {
 
 
-        if(identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
+        if(authored==null && identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
             return new ResponseEntity<>("[]", HttpStatus.OK);
         }
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
         List<ActionStatus> queryStatus = new ArrayList<>();
+        List<Date> dateempty = new ArrayList<>();
+        if(authored!=null){
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+            try {
+                Date date = format.parse(authored);
+                questionnaireQueryModel.setAuthored(Collections.singletonList(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+        }else{
+            questionnaireQueryModel.setAuthored(dateempty);
+        }
+
         if(identifier!=null){
             questionnaireQueryModel.setIdentifier(Collections.singletonList(identifier));
         }else{
