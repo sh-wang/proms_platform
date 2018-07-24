@@ -246,10 +246,10 @@ public class QuestionnaireResponseFhirResource {
                     queryStatus.add(ActionStatus.STARTED);
                     queryStatus.add(ActionStatus.PENDING);
                     break;
-                case "?":
+                case "NULL":
                     queryStatus.add(ActionStatus.UNKNOWN);
                     queryStatus.add(ActionStatus.UNINITIALISED);
-                    break; 
+                    break;
                 case "COMPLETED":
                     queryStatus.add(ActionStatus.COMPLETED);
                     break;

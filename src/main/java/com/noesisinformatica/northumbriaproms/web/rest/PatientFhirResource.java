@@ -39,6 +39,7 @@ import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PatientQueryModel;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.hl7.fhir.dstu3.model.ContactPoint;
 import org.hl7.fhir.dstu3.model.Enumerations;
@@ -47,12 +48,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -211,6 +215,122 @@ public class PatientFhirResource {
     }
 
 
+    /**
+     * SEARCH  /Patient?query=:query : search for the patient corresponding
+     * to the query.
+     * example: /Patient?query=1000000000 : search for patient with nhs number
+     * 1000000000
+     * query can be name or nhsNumber
+     *
+     * @param pageable the pagination information
+     * @return the result of the search in FHIR
+     */
+    @GetMapping("/Patient")
+    @Timed
+    public ResponseEntity<String> searchPatients(String address_postalcode,
+                                                 String birthdate,String family,
+                                                 String email, String gender,
+                                                 String given, String name,
+                                                 String identifier,
+                                                 @PageableDefault(sort = {"id"},
+                                                     direction = Sort.Direction.ASC) Pageable pageable) {
+        if(address_postalcode==null && birthdate==null && family==null && email==null && gender==null
+            && given==null && name==null && identifier==null){
+            return new ResponseEntity<>("[]", HttpStatus.OK);
+        }
+        PatientQueryModel patientQueryModel = new PatientQueryModel();
+
+        List<String> emptyValue = new ArrayList();
+        List<GenderType>genderEmpty = new ArrayList<>();
+        List<Date> dateEmpty = new ArrayList<>();
+        List<Long> idEmpty = new ArrayList<>();
+
+        if (address_postalcode != null){
+
+        }else{
+
+        }
+
+        if (birthdate != null){
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date date = format.parse(birthdate);
+                patientQueryModel.setBirthDate(Collections.singletonList(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }else {
+            patientQueryModel.setBirthDate(dateEmpty);
+        }
+
+        if (family != null){
+            patientQueryModel.setFamilyName(Collections.singletonList(family));
+        }else {
+            patientQueryModel.setFamilyName(emptyValue);
+        }
+
+        if (email != null){
+            patientQueryModel.setEmail(Collections.singletonList(email));
+        }else {
+            patientQueryModel.setEmail(emptyValue);
+        }
+
+        if (gender != null){
+            switch (gender){
+                case "male":
+                    genderEmpty.add(GenderType.MALE);
+                    break;
+                case "female":
+                    genderEmpty.add(GenderType.FEMALE);
+                    break;
+                case "unknown":
+                    genderEmpty.add(GenderType.UNKNOWN);
+                    break;
+                case "other":
+                    genderEmpty.add(GenderType.OTHER);
+                    break;
+                    default:
+                        genderEmpty.add(GenderType.FORSEARCH);
+                        break;
+            }
+            patientQueryModel.setGender(genderEmpty);
+        }else {
+            patientQueryModel.setGender(genderEmpty);
+        }
+
+        if (given != null){
+            patientQueryModel.setGivenName(Collections.singletonList(given));
+        } else {
+            patientQueryModel.setGivenName(emptyValue);
+        }
+
+        if (name != null){
+            patientQueryModel.setName(Collections.singletonList(name));
+        } else {
+            patientQueryModel.setName(emptyValue);
+        }
+
+        if (identifier != null){
+            try {
+                idEmpty.add(Long.parseLong(identifier));
+            }catch (Exception e){ }
+            patientQueryModel.setNhsNumber(idEmpty);
+        } else {
+            patientQueryModel.setNhsNumber(idEmpty);
+        }
+
+        log.debug("REST request to search for a page of Patient for query {}", patientQueryModel);
+        Page<Patient> page = patientService.searchFHIR(patientQueryModel, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(patientQueryModel.toString(),
+            page, "/api/fhir/Patient");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
+
+        // wrap results page in a response entity with faceted results turned into a map
+        JsonArray QuesResArray = JsonConversion(page);
+
+        return new ResponseEntity<>(QuesResArray.toString(), headers, HttpStatus.OK);
+    }
+
 //    /**
 //     * SEARCH  /Patient?query=:query : search for the patient corresponding
 //     * to the query.
@@ -221,51 +341,51 @@ public class PatientFhirResource {
 //     * @param pageable the pagination information
 //     * @return the result of the search in FHIR
 //     */
-    @GetMapping("/Patient")
-    @Timed
-    public ResponseEntity<String> searchPatients(String address_postalcode,
-                                                 String birthdate,String family,
-                                                 String email, String gender,
-                                                 String given, String name,
-                                                 Long phone, Long identifier,
-                                                 Pageable pageable) {
-        Map query = new HashMap();
-        query.put("address-postalcode", address_postalcode);
-        query.put("name", name);
-        query.put("identifier", identifier);
-        query.put("family", family);
-        query.put("birthdate", birthdate);
-        query.put("email", email);
-        query.put("gender", gender);
-        query.put("given", given);
-        query.put("phone", phone);
-
-        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
-        Page<Patient> page = patientService.searchFHIR(query, pageable);
-        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
-            (query.toString(), page, "/api/fhir/Patient");
-
-//        List<Patient> patientList = page.getContent();
-//        if(patientList!=null){
-//            System.out.println(patientList.size());
-//        }
-//        JsonArray patArray = new JsonArray();
+//    @GetMapping("/Patient")
+//    @Timed
+//    public ResponseEntity<String> searchPatients(String address_postalcode,
+//                                                 String birthdate,String family,
+//                                                 String email, String gender,
+//                                                 String given, String name,
+//                                                 Long phone, Long identifier,
+//                                                 Pageable pageable) {
+//        Map query = new HashMap();
+//        query.put("address-postalcode", address_postalcode);
+//        query.put("name", name);
+//        query.put("identifier", identifier);
+//        query.put("family", family);
+//        query.put("birthdate", birthdate);
+//        query.put("email", email);
+//        query.put("gender", gender);
+//        query.put("given", given);
+//        query.put("phone", phone);
 //
-//        for(Patient pat: patientList){
-//            String patInfo = getPatient(pat.getId()).getBody();
-//            com.google.gson.JsonParser toJson = new JsonParser();
-//            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
-//            patArray.add(patJson);
-//        }
-//        return new ResponseEntity<>(patArray.toString(), HttpStatus.OK);
-
-        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
-
-        JsonArray patientArray = JsonConversion(page);
-
-        return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
-
-    }
+//        log.debug("REST request to search for a page of Patients in FHIR format for query {}", query);
+//        Page<Patient> page = patientService.searchFHIR(query, pageable);
+//        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders
+//            (query.toString(), page, "/api/fhir/Patient");
+//
+////        List<Patient> patientList = page.getContent();
+////        if(patientList!=null){
+////            System.out.println(patientList.size());
+////        }
+////        JsonArray patArray = new JsonArray();
+////
+////        for(Patient pat: patientList){
+////            String patInfo = getPatient(pat.getId()).getBody();
+////            com.google.gson.JsonParser toJson = new JsonParser();
+////            JsonObject patJson = toJson.parse(patInfo).getAsJsonObject();
+////            patArray.add(patJson);
+////        }
+////        return new ResponseEntity<>(patArray.toString(), HttpStatus.OK);
+//
+//        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
+//
+//        JsonArray patientArray = JsonConversion(page);
+//
+//        return new ResponseEntity<>(patientArray.toString(), headers, HttpStatus.OK);
+//
+//    }
 
 
 //    @GetMapping("/Patients")

@@ -55,7 +55,6 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -438,7 +437,8 @@ public class FollowupActionServiceImpl implements FollowupActionService {
 
         BoolQueryBuilder parentQueryBuilder = QueryBuilders.boolQuery();
         for(String parent : query.getParent()) {
-            parentQueryBuilder.should(QueryBuilders.matchPhraseQuery("careEvent.followupPlan.procedureBooking.id", parent));
+            parentQueryBuilder.should(QueryBuilders.matchPhraseQuery(
+                "careEvent.followupPlan.procedureBooking.id", parent));
         }
 
         BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();
@@ -518,23 +518,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         log.debug("boolQueryBuilder = " + boolQueryBuilder);
         // build and return boolean query
         System.out.println(boolQueryBuilder);
-        return getPageForQuery(boolQueryBuilder, pageable);
-    }
 
-    private Page<FollowupAction> getPageForQuery(QueryBuilder queryBuilder, Pageable pageable) {
-        SearchQuery searchQuery = new NativeSearchQueryBuilder()
-            .withQuery(queryBuilder)
-            .withSort(getSortParameters(pageable))
-            .withPageable(pageable)
-            .addAggregation(new TermsBuilder("procedures").field("careEvent.followupPlan.procedureBooking.id").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("questionnaire").field("questionnaire.name").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("status").field("status").size(10).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("patient").field("patient.givenName" + " patient.familyName").size(100).order(Terms.Order.term(true)))
-            .addAggregation(new TermsBuilder("subject").field("patient.givenName" + " patient.familyName").size(100).order(Terms.Order.term(true)))
-            .build();
-
-        Page<FollowupAction> page = elasticsearchTemplate.queryForPage(searchQuery, FollowupAction.class);
-
-        return page;
+        return followupActionSearchRepository.search(boolQueryBuilder, pageable);
     }
 }

@@ -25,6 +25,7 @@ package com.noesisinformatica.northumbriaproms.service;
  */
 
 import com.noesisinformatica.northumbriaproms.domain.Patient;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PatientQueryModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -84,5 +85,5 @@ public interface PatientService {
      * @param pageable the pagination information
      * @return the list of entities
      */
-    Page<Patient> searchFHIR(Map query, Pageable pageable);
+    Page<Patient> searchFHIR(PatientQueryModel query, Pageable pageable);
 }
