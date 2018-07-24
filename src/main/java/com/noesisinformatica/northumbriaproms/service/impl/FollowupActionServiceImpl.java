@@ -469,6 +469,11 @@ public class FollowupActionServiceImpl implements FollowupActionService {
             authoredQueryBuilder.should(QueryBuilders.matchQuery("completedDate", localAuthored));
         }
 
+        BoolQueryBuilder authorQueryBuilder = QueryBuilders.boolQuery();
+        for(String author : query.getAuthor()) {
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (author, "createdBy", author));
+        }
 
         // we only add Identifier clause if there are 1 or more Identifier specified
         if(query.getIdentifier().size() > 0){
@@ -483,6 +488,11 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         // we only add Parent clause if there are 1 or more Parent specified
         if(query.getParent().size() > 0){
             boolQueryBuilder.must(parentQueryBuilder);
+        }
+
+        // we only add Author clause if there are 1 or more Authored specified
+        if(query.getAuthor().size() > 0){
+            boolQueryBuilder.must(authorQueryBuilder);
         }
 
         // we only add Questionnaire clause if there are 1 or more Questionnaire specified

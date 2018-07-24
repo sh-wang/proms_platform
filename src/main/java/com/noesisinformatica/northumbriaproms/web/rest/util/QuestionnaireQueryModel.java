@@ -15,6 +15,16 @@ public class QuestionnaireQueryModel {
     List<Date> authored = new ArrayList<>();
     List<String> patient = new ArrayList<>();
     List<String> subject = new ArrayList<>();
+    List<String> author = new ArrayList<>();
+
+
+    public List<String> getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(List<String> author) {
+        this.author = author;
+    }
 
     public List<String> getIdentifier() {
         return identifier;

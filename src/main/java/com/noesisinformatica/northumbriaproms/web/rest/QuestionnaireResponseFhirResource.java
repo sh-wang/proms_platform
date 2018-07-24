@@ -198,10 +198,10 @@ public class QuestionnaireResponseFhirResource {
     public ResponseEntity<String> searchQuestionnaireResponse(String identifier, String parent,
                                                               String questionnaire, String status,
                                                               String patient, String subject,
-                                                              String authored,
+                                                              String authored, String author,
                                                               @PageableDefault(sort = {"id"},
                                                                   direction = Sort.Direction.ASC) Pageable pageable) {
-        if(authored==null && identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
+        if(author==null && authored==null && identifier==null && parent==null && questionnaire==null && status==null && patient==null && subject==null){
             return new ResponseEntity<>("[]", HttpStatus.OK);
         }
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
@@ -220,7 +220,11 @@ public class QuestionnaireResponseFhirResource {
         }else{
             questionnaireQueryModel.setAuthored(dateEmpty);
         }
-
+        if(author!=null){
+            questionnaireQueryModel.setAuthor(Collections.singletonList(author));
+        }else{
+            questionnaireQueryModel.setAuthor(emptyValue);
+        }
         if(identifier!=null){
             questionnaireQueryModel.setIdentifier(Collections.singletonList(identifier));
         }else{
