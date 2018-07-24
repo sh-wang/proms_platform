@@ -241,22 +241,15 @@ public class QuestionnaireResponseFhirResource {
             questionnaireQueryModel.setQuestionnaire(emptyValue);
         }
         if(status!=null){
-            switch (status) {
-                case "inprogress":
-                    queryStatus.add(ActionStatus.STARTED);
-                    queryStatus.add(ActionStatus.PENDING);
-                    break;
-                case "INPROGRESS":
+            switch (status.toUpperCase()) {
+               case "IN-PROGRESS":
                     queryStatus.add(ActionStatus.STARTED);
                     queryStatus.add(ActionStatus.PENDING);
                     break;
                 case "?":
                     queryStatus.add(ActionStatus.UNKNOWN);
                     queryStatus.add(ActionStatus.UNINITIALISED);
-                    break;
-                case "completed":
-                    queryStatus.add(ActionStatus.COMPLETED);
-                    break;
+                    break; 
                 case "COMPLETED":
                     queryStatus.add(ActionStatus.COMPLETED);
                     break;
