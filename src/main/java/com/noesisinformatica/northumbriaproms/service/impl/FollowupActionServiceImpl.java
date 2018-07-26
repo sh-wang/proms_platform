@@ -7,17 +7,17 @@ package com.noesisinformatica.northumbriaproms.service.impl;
  * Copyright (C) 2017 - 2018 Termlex
  * %%
  * This software is Copyright and Intellectual Property of Termlex Inc Limited.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation as version 3 of the
  * License.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public
  * License along with this program.  If not, see
  * <https://www.gnu.org/licenses/agpl-3.0.en.html>.
@@ -27,10 +27,12 @@ package com.noesisinformatica.northumbriaproms.service.impl;
 import com.noesisinformatica.northumbriaproms.config.Constants;
 import com.noesisinformatica.northumbriaproms.domain.CareEvent;
 import com.noesisinformatica.northumbriaproms.domain.FollowupAction;
+import com.noesisinformatica.northumbriaproms.domain.enumeration.ActionStatus;
 import com.noesisinformatica.northumbriaproms.repository.FollowupActionRepository;
 import com.noesisinformatica.northumbriaproms.repository.search.FollowupActionSearchRepository;
 import com.noesisinformatica.northumbriaproms.service.FollowupActionService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.QueryModel;
+import com.noesisinformatica.northumbriaproms.web.rest.util.QuestionnaireQueryModel;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
@@ -53,9 +55,14 @@ import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilde
 import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 
 /**
  * Service Implementation for managing FollowupAction.
@@ -405,5 +412,110 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         return SortBuilders.fieldSort(sortField).order(sortOrder).unmappedType("string");
+    }
+
+    /**
+     * Search for the followupAction corresponding to the query.
+     *
+     * @param query the query of the search
+     *
+     * @param pageable the pagination information
+     * @return the list of entities
+     */
+    public Page<FollowupAction> searchQuestionnaire(QuestionnaireQueryModel query, Pageable pageable){
+        log.debug("Request to search for a page of Questionnaire Response for query {}", query);
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        BoolQueryBuilder identifierQueryBuilder = QueryBuilders.boolQuery();
+        for(String identifier : query.getIdentifier()) {
+            identifierQueryBuilder.should(QueryBuilders.matchQuery("id", identifier));
+        }
+
+        BoolQueryBuilder parentQueryBuilder = QueryBuilders.boolQuery();
+        for(String parent : query.getParent()) {
+            parentQueryBuilder.should(QueryBuilders.matchPhraseQuery(
+                "careEvent.followupPlan.procedureBooking.id", parent));
+        }
+
+        BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();
+        for(String questionnaire : query.getQuestionnaire()) {
+            questionnaireQueryBuilder.should(QueryBuilders.matchPhraseQuery("questionnaire.name", questionnaire));
+        }
+
+        BoolQueryBuilder statusQueryBuilder = QueryBuilders.boolQuery();
+        for(ActionStatus status : query.getStatus()) {
+            statusQueryBuilder.should(QueryBuilders.matchQuery("status", status));
+        }
+
+        BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
+        for(String patient : query.getPatient()) {
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (patient, "patient.givenName", "patient.familyName"));
+        }
+
+        BoolQueryBuilder subjectQueryBuilder = QueryBuilders.boolQuery();
+        for(String subject : query.getSubject()) {
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (subject, "patient.givenName", "patient.familyName"));
+        }
+
+        BoolQueryBuilder authoredQueryBuilder = QueryBuilders.boolQuery();
+        for(Date authored : query.getAuthored()) {
+            LocalDate localAuthored = authored.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            authoredQueryBuilder.should(QueryBuilders.matchQuery("completedDate", localAuthored));
+        }
+
+        BoolQueryBuilder authorQueryBuilder = QueryBuilders.boolQuery();
+        for(String author : query.getAuthor()) {
+            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
+                (author, "createdBy", author));
+        }
+
+        // we only add Identifier clause if there are 1 or more Identifier specified
+        if(query.getIdentifier().size() > 0){
+            boolQueryBuilder.must(identifierQueryBuilder);
+        }
+
+        // we only add Authored clause if there are 1 or more Authored specified
+        if(query.getAuthored().size() > 0){
+            boolQueryBuilder.must(authoredQueryBuilder);
+        }
+
+        // we only add Parent clause if there are 1 or more Parent specified
+        if(query.getParent().size() > 0){
+            boolQueryBuilder.must(parentQueryBuilder);
+        }
+
+        // we only add Author clause if there are 1 or more Authored specified
+        if(query.getAuthor().size() > 0){
+            boolQueryBuilder.must(authorQueryBuilder);
+        }
+
+        // we only add Questionnaire clause if there are 1 or more Questionnaire specified
+        if (query.getQuestionnaire().size() > 0){
+            boolQueryBuilder.must(questionnaireQueryBuilder);
+        }
+
+        // we only add Status clause if there are 1 or more Status specified
+        if (query.getStatus().size() > 0){
+            boolQueryBuilder.must(statusQueryBuilder);
+        }
+
+        // we only add Patient clause if there are 1 or more Patient specified
+        if (query.getPatient().size() > 0){
+            boolQueryBuilder.must(patientQueryBuilder);
+        }
+
+        // we only add Subject clause if there are 1 or more Subject specified
+        if (query.getSubject().size() > 0){
+            boolQueryBuilder.must(subjectQueryBuilder);
+        }
+
+        log.debug("boolQueryBuilder = " + boolQueryBuilder);
+        // build and return boolean query
+        System.out.println(boolQueryBuilder);
+
+        return followupActionSearchRepository.search(boolQueryBuilder, pageable);
     }
 }
