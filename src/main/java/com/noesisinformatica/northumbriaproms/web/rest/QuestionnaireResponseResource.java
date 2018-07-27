@@ -85,7 +85,7 @@ public class QuestionnaireResponseResource {
      */
     @GetMapping("/Questionnaire-response")
     @Timed
-    public ResponseEntity<String> searchQuestionnaireResponse(String identifier, String parent,
+    public ResponseEntity<List<FollowupAction>> searchQuestionnaireResponse(String identifier, String parent,
                                                               String questionnaire, String status,
                                                               String patient, String subject,
                                                               String authored, String author,
@@ -164,11 +164,9 @@ public class QuestionnaireResponseResource {
         Page<FollowupAction> page = followupActionService.searchQuestionnaire(questionnaireQueryModel, pageable);
 
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(questionnaireQueryModel.toString(), page, "/api/_search/followup-actions");
-        if (page.getTotalElements() == 0){ return new ResponseEntity<>("[]", headers, HttpStatus.OK); }
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>(new ArrayList<>(), headers, HttpStatus.OK); }
 
-        List<FollowupAction> questionnaireResponse = new ArrayList<>(page.getContent());
-
-        return new ResponseEntity<>(questionnaireResponse.toString(), headers, HttpStatus.OK);
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
 
