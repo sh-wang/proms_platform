@@ -55,7 +55,7 @@ public class QuestionnaireResponseResource {
     private final FollowupActionService followupActionService;
     //    private final FollowupActionResource followupActionResource;
     public QuestionnaireResponseResource(FollowupActionService followupActionService,
-                                             FollowupActionQueryService followupActionQueryService){
+                                         FollowupActionQueryService followupActionQueryService){
 
         this.followupActionService = followupActionService;
         this.followupActionQueryScervice = followupActionQueryService;
@@ -86,11 +86,11 @@ public class QuestionnaireResponseResource {
     @GetMapping("/Questionnaire-response")
     @Timed
     public ResponseEntity<List<FollowupAction>> searchQuestionnaireResponse(String identifier, String parent,
-                                                              String questionnaire, String status,
-                                                              String patient, String subject,
-                                                              String authored, String author,
-                                                              @PageableDefault(sort = {"id"},
-                                                                  direction = Sort.Direction.ASC) Pageable pageable) {
+                                                                            String questionnaire, String status,
+                                                                            String patient, String subject,
+                                                                            String authored, String author,
+                                                                            @PageableDefault(sort = {"id"},
+                                                                                direction = Sort.Direction.ASC) Pageable pageable) {
 
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
@@ -227,3 +227,4 @@ public class QuestionnaireResponseResource {
 //    }
 
 }
+
