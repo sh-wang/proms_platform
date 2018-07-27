@@ -25,8 +25,6 @@ package com.noesisinformatica.northumbriaproms.web.rest;
  */
 
 import com.codahale.metrics.annotation.Timed;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
 import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
@@ -182,34 +180,22 @@ public class PatientResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+
     /**
-     * Convert a list of FHIR patient information into a Json array
+     * search url example:
+     * api/patients?gender=male&name=abc
      *
-     * @return the Json array contains all patients information
+     * @param address_postalcode the query of the patient search
+     * @param birthdate the query of the patient search
+     * @param family the query of the patient search
+     * @param email the query of the patient search
+     * @param gender the query of the patient search
+     * @param given the query of the patient search
+     * @param name the query of the patient search
+     * @param identifier the query of the patient search
+     * @param pageable the pagination information
+     * @return the result of the search
      */
-    private List<Patient> JsonConversion(Page page){
-        List<Patient> patientList = new ArrayList<>();
-        String questionnaireResponseString;
-        JsonObject patientJson;
-        JsonArray patientArray = new JsonArray();
-        int pageNumber = page.getTotalPages();
-
-        while(pageNumber > 0){
-            patientList.addAll(page.getContent());
-            page = patientService.findAll(page.nextPageable());
-            pageNumber--;
-        }
-
-//        for(Patient patient: patientList) {
-//            questionnaireResponseString = getPatient(patient.getId()).getBody().toString();
-//            System.out.println(questionnaireResponseString);
-////            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
-////            patientJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
-//            patientArray.add(patientJson);
-//        }
-        return patientList;
-    }
-
     @GetMapping("/patients")
     @Timed
     public ResponseEntity<List<Patient>> searchPatients(String address_postalcode,
@@ -231,9 +217,9 @@ public class PatientResource {
         List<Long> idEmpty = new ArrayList<>();
 
         if (address_postalcode != null){
-
+            patientQueryModel.setAddress(emptyValue);
         }else{
-
+            patientQueryModel.setAddress(emptyValue);
         }
 
         if (birthdate != null){
@@ -311,8 +297,14 @@ public class PatientResource {
         if (page.getTotalElements() == 0){ return new ResponseEntity<>(new ArrayList<>(), headers, HttpStatus.OK); }
 
         // wrap results page in a response entity with faceted results turned into a map
-//        JsonArray QuesResArray = JsonConversion(page);
-        List<Patient> patientList = JsonConversion(page);
+        List<Patient> patientList = new ArrayList<>();
+        int pageNumber = page.getTotalPages();
+
+        while(pageNumber > 0){
+            patientList.addAll(page.getContent());
+            page = patientService.findAll(page.nextPageable());
+            pageNumber--;
+        }
 
         return new ResponseEntity<>(patientList, headers, HttpStatus.OK);
     }
