@@ -7,17 +7,17 @@ package com.noesisinformatica.northumbriaproms.web.rest;
  * Copyright (C) 2017 - 2018 Termlex
  * %%
  * This software is Copyright and Intellectual Property of Termlex Inc Limited.
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation as version 3 of the
  * License.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public
  * License along with this program.  If not, see
  * <https://www.gnu.org/licenses/agpl-3.0.en.html>.
@@ -25,18 +25,24 @@ package com.noesisinformatica.northumbriaproms.web.rest;
  */
 
 import com.codahale.metrics.annotation.Timed;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.noesisinformatica.northumbriaproms.domain.Patient;
+import com.noesisinformatica.northumbriaproms.domain.enumeration.GenderType;
 import com.noesisinformatica.northumbriaproms.service.PatientService;
 import com.noesisinformatica.northumbriaproms.web.rest.errors.BadRequestAlertException;
 import com.noesisinformatica.northumbriaproms.web.rest.util.HeaderUtil;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import com.noesisinformatica.northumbriaproms.service.dto.PatientCriteria;
 import com.noesisinformatica.northumbriaproms.service.PatientQueryService;
+import com.noesisinformatica.northumbriaproms.web.rest.util.PatientQueryModel;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,8 +52,9 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import java.util.List;
-import java.util.Optional;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -121,14 +128,14 @@ public class PatientResource {
      * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of patients in body
      */
-    @GetMapping("/patients")
-    @Timed
-    public ResponseEntity<List<Patient>> getAllPatients(PatientCriteria criteria, Pageable pageable) {
-        log.debug("REST request to get Patients by criteria: {}", criteria);
-        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/patients");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-    }
+//    @GetMapping("/patients")
+//    @Timed
+//    public ResponseEntity<List<Patient>> getAllPatients(PatientCriteria criteria, Pageable pageable) {
+//        log.debug("REST request to get Patients by criteria: {}", criteria);
+//        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
+//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/patients");
+//        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+//    }
 
     /**
      * GET  /patients/:id : get the "id" patient.
@@ -173,6 +180,141 @@ public class PatientResource {
         Page<Patient> page = patientService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/patients");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
+    /**
+     * Convert a list of FHIR patient information into a Json array
+     *
+     * @return the Json array contains all patients information
+     */
+    private List<Patient> JsonConversion(Page page){
+        List<Patient> patientList = new ArrayList<>();
+        String questionnaireResponseString;
+        JsonObject patientJson;
+        JsonArray patientArray = new JsonArray();
+        int pageNumber = page.getTotalPages();
+
+        while(pageNumber > 0){
+            patientList.addAll(page.getContent());
+            page = patientService.findAll(page.nextPageable());
+            pageNumber--;
+        }
+
+//        for(Patient patient: patientList) {
+//            questionnaireResponseString = getPatient(patient.getId()).getBody().toString();
+//            System.out.println(questionnaireResponseString);
+////            com.google.gson.JsonParser toJson = new com.google.gson.JsonParser();
+////            patientJson = toJson.parse(questionnaireResponseString).getAsJsonObject();
+//            patientArray.add(patientJson);
+//        }
+        return patientList;
+    }
+
+    @GetMapping("/patients")
+    @Timed
+    public ResponseEntity<List<Patient>> searchPatients(String address_postalcode,
+                                                 String birthdate,String family,
+                                                 String email, String gender,
+                                                 String given, String name,
+                                                 String identifier,
+                                                 @PageableDefault(sort = {"id"},
+                                                     direction = Sort.Direction.ASC) Pageable pageable) {
+        if(address_postalcode==null && birthdate==null && family==null && email==null && gender==null
+            && given==null && name==null && identifier==null){
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
+        }
+        PatientQueryModel patientQueryModel = new PatientQueryModel();
+
+        List<String> emptyValue = new ArrayList();
+        List<GenderType>genderEmpty = new ArrayList<>();
+        List<Date> dateEmpty = new ArrayList<>();
+        List<Long> idEmpty = new ArrayList<>();
+
+        if (address_postalcode != null){
+
+        }else{
+
+        }
+
+        if (birthdate != null){
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Date date = format.parse(birthdate);
+                patientQueryModel.setBirthDate(Collections.singletonList(date));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }else {
+            patientQueryModel.setBirthDate(dateEmpty);
+        }
+
+        if (family != null){
+            patientQueryModel.setFamilyName(Collections.singletonList(family));
+        }else {
+            patientQueryModel.setFamilyName(emptyValue);
+        }
+
+        if (email != null){
+            patientQueryModel.setEmail(Collections.singletonList(email));
+        }else {
+            patientQueryModel.setEmail(emptyValue);
+        }
+
+        if (gender != null){
+            switch (gender){
+                case "male":
+                    genderEmpty.add(GenderType.MALE);
+                    break;
+                case "female":
+                    genderEmpty.add(GenderType.FEMALE);
+                    break;
+                case "unknown":
+                    genderEmpty.add(GenderType.UNKNOWN);
+                    break;
+                case "other":
+                    genderEmpty.add(GenderType.OTHER);
+                    break;
+                default:
+                    genderEmpty.add(GenderType.FORSEARCH);
+                    break;
+            }
+            patientQueryModel.setGender(genderEmpty);
+        }else {
+            patientQueryModel.setGender(genderEmpty);
+        }
+
+        if (given != null){
+            patientQueryModel.setGivenName(Collections.singletonList(given));
+        } else {
+            patientQueryModel.setGivenName(emptyValue);
+        }
+
+        if (name != null){
+            patientQueryModel.setName(Collections.singletonList(name));
+        } else {
+            patientQueryModel.setName(emptyValue);
+        }
+
+        if (identifier != null){
+            try {
+                idEmpty.add(Long.parseLong(identifier));
+            }catch (Exception e){ }
+            patientQueryModel.setNhsNumber(idEmpty);
+        } else {
+            patientQueryModel.setNhsNumber(idEmpty);
+        }
+
+        log.debug("REST request to search for a page of Patient for query {}", patientQueryModel);
+        Page<Patient> page = patientService.searchFHIR(patientQueryModel, pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(patientQueryModel.toString(),
+            page, "/api/patientss");
+        if (page.getTotalElements() == 0){ return new ResponseEntity<>(new ArrayList<>(), headers, HttpStatus.OK); }
+
+        // wrap results page in a response entity with faceted results turned into a map
+//        JsonArray QuesResArray = JsonConversion(page);
+        List<Patient> patientList = JsonConversion(page);
+
+        return new ResponseEntity<>(patientList, headers, HttpStatus.OK);
     }
 
 }
