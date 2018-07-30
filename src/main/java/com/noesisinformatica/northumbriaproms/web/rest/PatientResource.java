@@ -128,14 +128,14 @@ public class PatientResource {
      * @param criteria the criterias which the requested entities should match
      * @return the ResponseEntity with status 200 (OK) and the list of patients in body
      */
-//    @GetMapping("/patients")
-//    @Timed
-//    public ResponseEntity<List<Patient>> getAllPatients(PatientCriteria criteria, Pageable pageable) {
-//        log.debug("REST request to get Patients by criteria: {}", criteria);
-//        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
-//        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/patients");
-//        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
-//    }
+    @GetMapping("/patients")
+    @Timed
+    public ResponseEntity<List<Patient>> getAllPatients(PatientCriteria criteria, Pageable pageable) {
+        log.debug("REST request to get Patients by criteria: {}", criteria);
+        Page<Patient> page = patientQueryService.findByCriteria(criteria, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/patients");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
 
     /**
      * GET  /patients/:id : get the "id" patient.
@@ -210,7 +210,7 @@ public class PatientResource {
         return patientList;
     }
 
-    @GetMapping("/patients")
+    @GetMapping("/search/patients")
     @Timed
     public ResponseEntity<List<Patient>> searchPatients(String address_postalcode,
                                                  String birthdate,String family,
