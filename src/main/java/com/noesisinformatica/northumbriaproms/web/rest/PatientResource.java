@@ -295,7 +295,7 @@ public class PatientResource {
         log.debug("REST request to search for a page of Patient for query {}", patientQueryModel);
         Page<Patient> page = patientService.searchFHIR(patientQueryModel, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(patientQueryModel.toString(),
-            page, "/api/patientss");
+            page, "/api/search/patients");
         if (page.getTotalElements() == 0){ return new ResponseEntity<>(new ArrayList<>(), headers, HttpStatus.OK); }
 
         // wrap results page in a response entity with faceted results turned into a map
