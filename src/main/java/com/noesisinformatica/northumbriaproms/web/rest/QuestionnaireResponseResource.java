@@ -71,10 +71,6 @@ public class QuestionnaireResponseResource {
                                                                             @PageableDefault(sort = {"id"},
                                                                                 direction = Sort.Direction.ASC) Pageable pageable) {
 
-        if (identifier == null && parent == null && questionnaire == null && status == null &&
-            patient == null && subject == null && authored == null && author == null){
-            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
-        }
         QuestionnaireQueryModel questionnaireQueryModel = new QuestionnaireQueryModel();
         List<String> emptyValue = new ArrayList();
         List<ActionStatus> queryStatus = new ArrayList<>();
