@@ -62,7 +62,7 @@ public class QuestionnaireResponseResource {
      *
      * @return the result of the search
      */
-    @GetMapping("/Questionnaire-response")
+    @GetMapping("/search/Questionnaire-response")
     @Timed
     public ResponseEntity<List<FollowupAction>> searchQuestionnaireResponse(String identifier, String parent,
                                                                             String questionnaire, String status,
