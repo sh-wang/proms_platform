@@ -217,6 +217,7 @@ public class PatientResource {
         List<GenderType>genderEmpty = new ArrayList<>();
         List<Date> dateEmpty = new ArrayList<>();
         List<Long> idEmpty = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
         if (address_postalcode != null){
             patientQueryModel.setAddress(emptyValue);
@@ -225,12 +226,14 @@ public class PatientResource {
         }
 
         if (birthdate != null){
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date date = format.parse(birthdate);
                 patientQueryModel.setBirthDate(Collections.singletonList(date));
             } catch (ParseException e) {
                 e.printStackTrace();
+                try { Date fakeDate = format.parse("1000-01-01");
+                    patientQueryModel.setBirthDate(Collections.singletonList(fakeDate));
+                }catch (ParseException w){}
             }
         }else {
             patientQueryModel.setBirthDate(dateEmpty);
@@ -286,7 +289,9 @@ public class PatientResource {
         if (identifier != null){
             try {
                 idEmpty.add(Long.parseLong(identifier));
-            }catch (Exception e){ }
+            }catch (Exception e){
+                idEmpty.add((long)0000000000);
+            }
             patientQueryModel.setNhsNumber(idEmpty);
         } else {
             patientQueryModel.setNhsNumber(idEmpty);

@@ -76,6 +76,7 @@ public class QuestionnaireResponseResource {
         List<ActionStatus> queryStatus = new ArrayList<>();
         List<Date> dateEmpty = new ArrayList<>();
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
         if (authored != null) {
             try {
                 Date date = format.parse(authored);
