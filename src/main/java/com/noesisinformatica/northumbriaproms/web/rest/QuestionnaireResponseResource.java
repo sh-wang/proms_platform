@@ -146,7 +146,7 @@ public class QuestionnaireResponseResource {
         if (page.getTotalElements() == 0) {
             return new ResponseEntity<>(new ArrayList<>(), headers, HttpStatus.OK);
         }
-
+        System.out.println("result:"+page.getContent());
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 

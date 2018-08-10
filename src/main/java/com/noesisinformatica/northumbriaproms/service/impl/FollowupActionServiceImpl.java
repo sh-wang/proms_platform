@@ -435,7 +435,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         BoolQueryBuilder parentQueryBuilder = QueryBuilders.boolQuery();
         for(String parent : query.getParent()) {
             parentQueryBuilder.should(QueryBuilders.matchPhraseQuery(
-                "careEvent.followupPlan.procedureBooking.id", parent));
+                "careEvent.followupPlan.procedureBooking.primaryProcedure", parent));
         }
 
         BoolQueryBuilder questionnaireQueryBuilder = QueryBuilders.boolQuery();

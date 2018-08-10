@@ -126,6 +126,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/api/search/**").permitAll()
             .antMatchers("/api/addresses/**").permitAll()
             .antMatchers("/api/procedures/**").permitAll()
+            .antMatchers("/api/_search/**").permitAll()
             .antMatchers("/api/questionnaires/**").permitAll()
             .antMatchers("/api/followup-actions/**").permitAll()
             .antMatchers("/api/Questionnaire-response?**").permitAll()
