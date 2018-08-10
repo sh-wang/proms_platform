@@ -127,13 +127,13 @@ public class QuestionnaireResponseFhirResource {
             questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS);
         }
         if (followupAction.getStatus().equals(ActionStatus.UNINITIALISED)){
-            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.NULL);
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.STOPPED);
         }
         if (followupAction.getStatus().equals(ActionStatus.COMPLETED)){
             questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.COMPLETED);
         }
         if (followupAction.getStatus().equals(ActionStatus.UNKNOWN)){
-            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.NULL);
+            questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.STOPPED);
         }
         if (followupAction.getStatus().equals(ActionStatus.PENDING)){
             questionnaireResponse.setStatus(QuestionnaireResponse.QuestionnaireResponseStatus.INPROGRESS);
@@ -246,7 +246,7 @@ public class QuestionnaireResponseFhirResource {
                     queryStatus.add(ActionStatus.STARTED);
                     queryStatus.add(ActionStatus.PENDING);
                     break;
-                case "NULL":
+                case "STOPPED":
                     queryStatus.add(ActionStatus.UNKNOWN);
                     queryStatus.add(ActionStatus.UNINITIALISED);
                     break;
