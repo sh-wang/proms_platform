@@ -66,7 +66,7 @@ public class QuestionnaireResponseResource {
     @Timed
     public ResponseEntity<List<FollowupAction>> searchQuestionnaireResponse(String identifier, String parent,
                                                                             String questionnaire, String status,
-                                                                            String patient, String subject,
+                                                                            String patient, String familyName,
                                                                             String authored, String author,
                                                                             @PageableDefault(sort = {"id"},
                                                                                 direction = Sort.Direction.ASC) Pageable pageable) {
@@ -75,15 +75,17 @@ public class QuestionnaireResponseResource {
         List<String> emptyValue = new ArrayList();
         List<ActionStatus> queryStatus = new ArrayList<>();
         List<Date> dateEmpty = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         if (authored != null) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
             try {
                 Date date = format.parse(authored);
                 questionnaireQueryModel.setAuthored(Collections.singletonList(date));
             } catch (ParseException e) {
                 e.printStackTrace();
+                try { Date fakeDate = format.parse("1000-01-01");
+                    questionnaireQueryModel.setAuthored(Collections.singletonList(fakeDate));
+                }catch (ParseException w){}
             }
-
         } else {
             questionnaireQueryModel.setAuthored(dateEmpty);
         }
@@ -113,7 +115,7 @@ public class QuestionnaireResponseResource {
                     queryStatus.add(ActionStatus.STARTED);
                     queryStatus.add(ActionStatus.PENDING);
                     break;
-                case "NULL":
+                case "STOPPED":
                     queryStatus.add(ActionStatus.UNKNOWN);
                     queryStatus.add(ActionStatus.UNINITIALISED);
                     break;
@@ -133,10 +135,10 @@ public class QuestionnaireResponseResource {
         } else {
             questionnaireQueryModel.setPatient(emptyValue);
         }
-        if (subject != null) {
-            questionnaireQueryModel.setSubject(Collections.singletonList(subject));
+        if (familyName != null) {
+            questionnaireQueryModel.setFamilyName(Collections.singletonList(familyName));
         } else {
-            questionnaireQueryModel.setSubject(emptyValue);
+            questionnaireQueryModel.setFamilyName(emptyValue);
         }
 
         log.debug("REST request to search for a page of QuestionnaireResponse for query {}", questionnaireQueryModel);

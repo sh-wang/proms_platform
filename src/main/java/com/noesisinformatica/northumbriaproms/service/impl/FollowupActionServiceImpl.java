@@ -450,14 +450,12 @@ public class FollowupActionServiceImpl implements FollowupActionService {
 
         BoolQueryBuilder patientQueryBuilder = QueryBuilders.boolQuery();
         for(String patient : query.getPatient()) {
-            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
-                (patient, "patient.givenName", "patient.familyName"));
+            patientQueryBuilder.should(QueryBuilders.matchQuery("patient.givenName", patient));
         }
 
-        BoolQueryBuilder subjectQueryBuilder = QueryBuilders.boolQuery();
-        for(String subject : query.getSubject()) {
-            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
-                (subject, "patient.givenName", "patient.familyName"));
+        BoolQueryBuilder familyNameQueryBuilder = QueryBuilders.boolQuery();
+        for(String familyName : query.getFamilyName()) {
+            familyNameQueryBuilder.should(QueryBuilders.matchQuery("patient.familyName", familyName));
         }
 
         BoolQueryBuilder authoredQueryBuilder = QueryBuilders.boolQuery();
@@ -468,8 +466,7 @@ public class FollowupActionServiceImpl implements FollowupActionService {
 
         BoolQueryBuilder authorQueryBuilder = QueryBuilders.boolQuery();
         for(String author : query.getAuthor()) {
-            patientQueryBuilder.should(QueryBuilders.multiMatchQuery
-                (author, "createdBy", author));
+            authorQueryBuilder.should(QueryBuilders.matchQuery("createdBy", author));
         }
 
         // we only add Identifier clause if there are 1 or more Identifier specified
@@ -508,8 +505,8 @@ public class FollowupActionServiceImpl implements FollowupActionService {
         }
 
         // we only add Subject clause if there are 1 or more Subject specified
-        if (query.getSubject().size() > 0){
-            boolQueryBuilder.must(subjectQueryBuilder);
+        if (query.getFamilyName().size() > 0){
+            boolQueryBuilder.must(familyNameQueryBuilder);
         }
 
         log.debug("boolQueryBuilder = " + boolQueryBuilder);

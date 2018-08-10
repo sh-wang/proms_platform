@@ -12,7 +12,7 @@ public class QuestionnaireQueryModel {
     List<ActionStatus> status = new ArrayList<>();
     List<Date> authored = new ArrayList<>();
     List<String> patient = new ArrayList<>();
-    List<String> subject = new ArrayList<>();
+    List<String> familyName = new ArrayList<>();
     List<String> author = new ArrayList<>();
 
 
@@ -64,12 +64,12 @@ public class QuestionnaireQueryModel {
         this.patient = patient;
     }
 
-    public List<String> getSubject() {
-        return subject;
+    public List<String> getFamilyName() {
+        return familyName;
     }
 
-    public void setSubject(List<String> subject) {
-        this.subject = subject;
+    public void setFamilyName(List<String> familyName) {
+        this.familyName = familyName;
     }
 
     public List<Date> getAuthored() {
@@ -87,7 +87,7 @@ public class QuestionnaireQueryModel {
         sb.append(", parent=").append(parent);
         sb.append(", questionnaire=").append(questionnaire);
         sb.append(", status=").append(status);
-        sb.append(", subject=").append(subject);
+        sb.append(", familyName=").append(familyName);
         sb.append(", authored=").append(authored);
         sb.append(", patient='").append(patient).append('\'');
         sb.append('}');
