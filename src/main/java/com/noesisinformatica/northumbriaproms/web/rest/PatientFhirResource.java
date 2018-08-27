@@ -126,8 +126,12 @@ public class PatientFhirResource {
         patientFhir.setBirthDate(Date.from(btd.toInstant()));
 
         // add Email
-        patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
-        patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
+        if(patient.getEmail() == null){
+            patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue("null");
+        }else{
+            patientFhir.addTelecom().setSystem(ContactPoint.ContactPointSystem.EMAIL).setValue(patient.getEmail());
+        }
+//        patientFhir.addIdentifier().setSystem("ID").setValue(patient.getId().toString());
 
         // add NHS number
         if (patient.getNhsNumber() == null){

@@ -47,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 
 /**
@@ -93,15 +94,31 @@ public class QuestionnaireFhirResource {
      * @return corresponding FHIR dstu3 questionnaire
      */
     public org.hl7.fhir.dstu3.model.Questionnaire getQuestionnaireResource(Long id){
-        Questionnaire questionnaire = questionnaireService.findOne(id);
-        if (questionnaire == null){ return null;}
         org.hl7.fhir.dstu3.model.Questionnaire questionnaireFhir = new org.hl7.fhir.dstu3.model.Questionnaire();
+        Questionnaire questionnaire = new Questionnaire();
+        try{
+            questionnaire = questionnaireService.findOne(id);
+        }catch(Exception e){
+            return null;
+        }
+        try{
+            // add url
+            questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);
 
-        questionnaireFhir.setUrl(defaultPath + "questionnaires/"+id);
-        questionnaireFhir.setId(id.toString());
-        questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
-        questionnaireFhir.setName(questionnaire.getName());
-        questionnaireFhir.setCopyright(questionnaire.getCopyright());
+            // add id
+            questionnaireFhir.setId(id.toString());
+
+            // add status
+            questionnaireFhir.setStatus(Enumerations.PublicationStatus.ACTIVE);
+
+            // add name
+            questionnaireFhir.setName(questionnaire.getName());
+
+            // add copyright
+            questionnaireFhir.setCopyright(questionnaire.getCopyright());
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
         return questionnaireFhir;
     }

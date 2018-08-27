@@ -34,6 +34,7 @@ import com.noesisinformatica.northumbriaproms.service.ProcedureService;
 import com.noesisinformatica.northumbriaproms.web.rest.util.PaginationUtil;
 import org.hl7.fhir.dstu3.model.CodeableConcept;
 import org.hl7.fhir.dstu3.model.Coding;
+import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -93,18 +94,31 @@ public class ProcedureFhirResource {
      * @return corresponding FHIR dstu3 procedure
      */
     public org.hl7.fhir.dstu3.model.Procedure getProcedureResource(Long id){
-        Procedure procedure = procedureService.findOne(id);
-        if (procedure == null){ return null; }
         org.hl7.fhir.dstu3.model.Procedure procedureFhir = new org.hl7.fhir.dstu3.model.Procedure();
+        Procedure procedure = new Procedure();
+        try{
+            procedure = procedureService.findOne(id);
+        }
+        catch (Exception e){
+            return null;
+        }
+//        if (procedure == null){ return null; }
+        try{
+            //add id
+            procedureFhir.setId(id.toString());
+            //currently no status data
+            procedureFhir.setStatus(org.hl7.fhir.dstu3.model.Procedure.ProcedureStatus.UNKNOWN);
 
-        procedureFhir.setId(id.toString());
-        //currently no status data
-        procedureFhir.setStatus(org.hl7.fhir.dstu3.model.Procedure.ProcedureStatus.UNKNOWN);
+            CodeableConcept codeableConcept = new CodeableConcept();
+            // add localcode as code and add name
+            codeableConcept.addCoding().setCode(procedure.getLocalCode().toString()).
+                setDisplay(procedure.getName().substring(1, procedure.getName().length()));
+            procedureFhir.setCode(codeableConcept);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
 
-        CodeableConcept codeableConcept = new CodeableConcept();
-        codeableConcept.addCoding().setCode(procedure.getLocalCode().toString()).
-            setDisplay(procedure.getName().substring(1, procedure.getName().length()));
-        procedureFhir.setCode(codeableConcept);
 
         return procedureFhir;
     }
